@@ -1,0 +1,81 @@
+{
+	"ImportPath": "github.com/cjimti/migration-kit",
+	"GoVersion": "go1.9",
+	"GodepVersion": "v80",
+	"Deps": [
+		{
+			"ImportPath": "github.com/AlecAivazis/survey",
+			"Comment": "v1.4.2-3-g6c118e2",
+			"Rev": "6c118e265bb2c74e38a987746f763c34d5947769"
+		},
+		{
+			"ImportPath": "github.com/chzyer/readline",
+			"Comment": "v1.4-38-gf6d7a1f",
+			"Rev": "f6d7a1f6fbf35bbf9beb80dc63c56a29dcfb759f"
+		},
+		{
+			"ImportPath": "github.com/desertbit/closer",
+			"Rev": "756292787619f9b691c47b65bb032ee53b2d8fa1"
+		},
+		{
+			"ImportPath": "github.com/desertbit/columnize",
+			"Comment": "v2.1.0-17-gabc9093",
+			"Rev": "abc90934186a77966e2beeac62ed966aac0561d5"
+		},
+		{
+			"ImportPath": "github.com/desertbit/go-shlex",
+			"Rev": "3f9db97f856818214da2e1057f8ad84803971cff"
+		},
+		{
+			"ImportPath": "github.com/desertbit/grumble",
+			"Rev": "6937ab963dc4f585a6750ac8fc554e919140edb8"
+		},
+		{
+			"ImportPath": "github.com/fatih/color",
+			"Comment": "v1.6.0",
+			"Rev": "507f6050b8568533fb3f5504de8e5205fa62a114"
+		},
+		{
+			"ImportPath": "github.com/go-yaml/yaml",
+			"Comment": "v2.1.1",
+			"Rev": "7f97868eec74b32b0982dd158a51a446d1da7eb5"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-colorable",
+			"Comment": "v0.0.9-13-g7dc3415",
+			"Rev": "7dc3415be66d7cc68bf0182f35c8d31f8d2ad8a7"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-isatty",
+			"Comment": "v0.0.3-7-g6ca4dbf",
+			"Rev": "6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-runewidth",
+			"Comment": "v0.0.2-11-ga9d6d1e",
+			"Rev": "a9d6d1e4dc51df2130326793d49971f238839169"
+		},
+		{
+			"ImportPath": "github.com/mgutz/ansi",
+			"Rev": "9520e82c474b0a04dd04f8a40959027271bab992"
+		},
+		{
+			"ImportPath": "github.com/olekukonko/tablewriter",
+			"Rev": "b8a9be070da40449e501c3c4730a889e42d87a9e"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "37707fdb30a5b38865cfb95e5aab41707daec7fd"
+		},
+		{
+			"ImportPath": "gopkg.in/AlecAivazis/survey.v1/core",
+			"Comment": "v1.4.2",
+			"Rev": "9f89d9dd66613216993dc300f9f3dbae9c3c9bda"
+		},
+		{
+			"ImportPath": "gopkg.in/AlecAivazis/survey.v1/terminal",
+			"Comment": "v1.4.2",
+			"Rev": "9f89d9dd66613216993dc300f9f3dbae9c3c9bda"
+		}
+	]
+}
