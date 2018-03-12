@@ -20,8 +20,9 @@ func init() {
 	App.AddCommand(listCmd)
 
 	listCmd.AddCommand(&grumble.Command{
-		Name: "projects",
-		Help: "list projects",
+		Name:    "projects",
+		Help:    "list projects",
+		Aliases: []string{"proj"},
 		Run: func(c *grumble.Context) error {
 			listProjects()
 			return nil

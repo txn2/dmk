@@ -21,8 +21,9 @@ func init() {
 	App.AddCommand(createCmd)
 
 	createCmd.AddCommand(&grumble.Command{
-		Name: "project",
-		Help: "create a project",
+		Name:    "project",
+		Help:    "create a project",
+		Aliases: []string{"proj"},
 		Run: func(c *grumble.Context) error {
 			createProject()
 			return nil
@@ -40,6 +41,31 @@ func init() {
 			return nil
 		},
 	})
+
+	createCmd.AddCommand(&grumble.Command{
+		Name:    "query",
+		Help:    "create a query",
+		Aliases: []string{"q"},
+		Run: func(c *grumble.Context) error {
+			if ok := activeProjectCheck(); ok {
+				createQuery()
+			}
+			return nil
+		},
+	})
+
+	createCmd.AddCommand(&grumble.Command{
+		Name:    "migration",
+		Help:    "create a migration",
+		Aliases: []string{"m"},
+		Run: func(c *grumble.Context) error {
+			if ok := activeProjectCheck(); ok {
+				createMigration()
+			}
+			return nil
+		},
+	})
+
 }
 
 func activeProjectCheck() (ok bool) {
@@ -80,6 +106,79 @@ func createDatabase() {
 	}
 
 	global.Project.Databases[machineName] = database
+	saved := confirmAndSave(global.Project.Component.MachineName, global.Project)
+	if saved {
+		fmt.Println()
+		fmt.Printf("NOTICE: Project %s was saved.\n", name)
+	}
+}
+
+func createMigration() {
+	name := ""
+	prompt := &survey.Input{
+		Message: "Migrate Name:",
+		Help:    "Human readable name. Ex: `Migrate users`",
+	}
+	survey.AskOne(prompt, &name, nil)
+
+	machineName := machineName(name)
+
+	description := ""
+	prompt = &survey.Input{
+		Message: "Migration Description:",
+		Help:    "Ex: `Migrate all users from the user table.`",
+	}
+	survey.AskOne(prompt, &description, nil)
+
+	component := cfg.Component{
+		Kind:        "Migration",
+		MachineName: machineName,
+		Name:        name,
+		Description: description,
+	}
+
+	migration := cfg.Migration{
+		Component: component,
+	}
+
+	global.Project.Migrations[machineName] = migration
+	saved := confirmAndSave(global.Project.Component.MachineName, global.Project)
+	if saved {
+		fmt.Println()
+		fmt.Printf("NOTICE: Project %s was saved.\n", name)
+	}
+
+}
+
+func createQuery() {
+	name := ""
+	prompt := &survey.Input{
+		Message: "Query Name:",
+		Help:    "Human readable name. Ex: `Get all users`",
+	}
+	survey.AskOne(prompt, &name, nil)
+
+	machineName := machineName(name)
+
+	description := ""
+	prompt = &survey.Input{
+		Message: "Query Description:",
+		Help:    "Ex: `Gat all users from the user table.`",
+	}
+	survey.AskOne(prompt, &description, nil)
+
+	component := cfg.Component{
+		Kind:        "Query",
+		MachineName: machineName,
+		Name:        name,
+		Description: description,
+	}
+
+	query := cfg.Query{
+		Component: component,
+	}
+
+	global.Project.Queries[machineName] = query
 	saved := confirmAndSave(global.Project.Component.MachineName, global.Project)
 	if saved {
 		fmt.Println()

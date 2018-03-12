@@ -27,10 +27,10 @@ type Query struct {
 
 type Migration struct {
 	Component          Component
-	SourceDb           Database
-	DestinationDb      Database
-	SourceQuery        Query // how to get the data
-	DestinationQuery   Query // where to put the data
+	SourceDb           string // db machine name
+	DestinationDb      string // db machine name
+	SourceQuery        string // how to get the data
+	DestinationQuery   string // where to put the data
 	TransformationSpec interface{}
 }
 

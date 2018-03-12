@@ -49,15 +49,37 @@ func describeProject(machineName string) {
 		dbMachNames = append(dbMachNames, k)
 	}
 
+	qMachNames := make([]string, 0, len(p.Queries))
+	for k := range p.Queries {
+		qMachNames = append(qMachNames, k)
+	}
+
+	mMachNames := make([]string, 0, len(p.Migrations))
+	for k := range p.Migrations {
+		mMachNames = append(mMachNames, k)
+	}
+
 	describeComponent(p.Component)
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.Append([]string{"Databases", fmt.Sprintf("%s", dbMachNames)})
-	table.Append([]string{"Queries", string(len(p.Queries))})
-	table.Append([]string{"Migrations", string(len(p.Migrations))})
+	table.Append([]string{"Databases", listing(dbMachNames)})
+	table.Append([]string{"Queries", listing(qMachNames)})
+	table.Append([]string{"Migrations", listing(mMachNames)})
 
 	table.Render()
 	fmt.Println()
+}
+
+func listing(keys []string) (tlist string) {
+	first := true
+	for _, k := range keys {
+		if first != true {
+			tlist = tlist + "\n"
+		}
+		tlist = tlist + fmt.Sprintf("%s", k)
+		first = false
+	}
+	return tlist
 }
 
 func describeComponent(c cfg.Component) {
