@@ -2,13 +2,24 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
+	"log"
+	"regexp"
+	"strings"
+
+	"io/ioutil"
+
+	"github.com/AlecAivazis/survey"
+	"github.com/cjimti/migration-kit/cfg"
 	"github.com/desertbit/grumble"
 	"github.com/fatih/color"
+	"github.com/go-yaml/yaml"
 )
 
 var global struct {
-	Env map[string]string
+	Project cfg.Project
+	Env     map[string]string
 }
 
 var App = grumble.New(&grumble.Config{
@@ -42,4 +53,54 @@ func init() {
 		fmt.Println()
 	})
 
+}
+
+func loadProject(filename string) (project cfg.Project, err error) {
+	ymlData, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return project, err
+	}
+
+	project = cfg.Project{}
+
+	err = yaml.Unmarshal([]byte(ymlData), &project)
+	if err != nil {
+		return project, err
+	}
+
+	return project, nil
+}
+
+func SetProject(project cfg.Project) {
+	global.Project = project
+	App.SetPrompt("dmk » " + project.Component.MachineName + " » ")
+}
+
+func machineName(name string) string {
+	reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	machineName := strings.ToLower(reg.ReplaceAllString(name, "_"))
+
+	prompt := &survey.Input{
+		Message: "Machine Name:",
+		Help: "\n The Machine Name is used for file names and referencing components." +
+			"\n This should not container spaces or special characters other than - and _" +
+			"\n The Default should be acceptable.",
+		Default: machineName,
+	}
+
+	survey.AskOne(prompt, &machineName, nil)
+
+	return machineName
+}
+
+func fileExists(file string) bool {
+	if _, err := os.Stat(file); err == nil {
+		return true
+	}
+
+	return false
 }

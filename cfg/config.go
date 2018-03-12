@@ -1,8 +1,9 @@
 package cfg
 
 type Component struct {
+	Kind        string
 	Name        string
-	MachineName string
+	MachineName string `yaml:"machineName"`
 	Description string
 }
 
