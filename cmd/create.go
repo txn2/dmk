@@ -105,6 +105,10 @@ func createDatabase() {
 		Component: component,
 	}
 
+	if global.Project.Databases == nil {
+		global.Project.Databases = map[string]cfg.Database{}
+	}
+
 	global.Project.Databases[machineName] = database
 	saved := confirmAndSave(global.Project.Component.MachineName, global.Project)
 	if saved {
@@ -139,6 +143,10 @@ func createMigration() {
 
 	migration := cfg.Migration{
 		Component: component,
+	}
+
+	if global.Project.Migrations == nil {
+		global.Project.Migrations = map[string]cfg.Migration{}
 	}
 
 	global.Project.Migrations[machineName] = migration
@@ -176,6 +184,10 @@ func createQuery() {
 
 	query := cfg.Query{
 		Component: component,
+	}
+
+	if global.Project.Queries == nil {
+		global.Project.Queries = map[string]cfg.Query{}
 	}
 
 	global.Project.Queries[machineName] = query
