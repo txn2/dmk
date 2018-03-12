@@ -12,8 +12,9 @@ import (
 
 func init() {
 	listCmd := &grumble.Command{
-		Name: "list",
-		Help: "list components such as projects, databases, queries, transformations and migrations",
+		Name:    "list",
+		Help:    "list components such as projects, databases, queries, transformations and migrations",
+		Aliases: []string{"ls"},
 	}
 
 	App.AddCommand(listCmd)
