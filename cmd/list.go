@@ -31,10 +31,24 @@ func init() {
 
 	listCmd.AddCommand(&grumble.Command{
 		Name:    "databases",
-		Help:    "list projects",
+		Help:    "list databases",
 		Aliases: []string{"db", "dbs"},
 		Run: func(c *grumble.Context) error {
-			listDatabases()
+			if ok := activeProjectCheck(); ok {
+				listDatabases()
+			}
+			return nil
+		},
+	})
+
+	listCmd.AddCommand(&grumble.Command{
+		Name:    "queries",
+		Help:    "list queries",
+		Aliases: []string{"q", "qs", "query"},
+		Run: func(c *grumble.Context) error {
+			if ok := activeProjectCheck(); ok {
+				listQueries()
+			}
 			return nil
 		},
 	})
@@ -42,6 +56,28 @@ func init() {
 }
 
 func listDatabases() {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Machine Name", "Name", "Description"})
+
+	for k := range global.Project.Databases {
+		db := global.Project.Databases[k]
+		table.Append([]string{db.Component.MachineName, db.Component.Name, db.Component.Description})
+	}
+
+	table.Render()
+
+}
+
+func listQueries() {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Machine Name", "Name", "Description", "Statement"})
+
+	for k := range global.Project.Queries {
+		q := global.Project.Queries[k]
+		table.Append([]string{q.Component.MachineName, q.Component.Name, q.Component.Description, q.Statement})
+	}
+
+	table.Render()
 
 }
 
@@ -59,6 +95,15 @@ func listProjects() {
 
 	table.Render()
 
+}
+
+// GetDatabases returns an array slice of Database machine names
+func GetDatabaseMachineNames(project cfg.Project) (dbMachineNames []string) {
+	for k := range project.Databases {
+		dbMachineNames = append(dbMachineNames, k)
+	}
+
+	return dbMachineNames
 }
 
 // GetProjects returns an array slice of projects.
