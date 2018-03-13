@@ -18,7 +18,7 @@ func init() {
 		Name:      "project",
 		Help:      "open project",
 		Usage:     "open project [machine_name]",
-		Aliases:   []string{"proj"},
+		Aliases:   []string{"p", "proj"},
 		AllowArgs: true,
 		Run: func(c *grumble.Context) error {
 			if len(c.Args) == 1 {

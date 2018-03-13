@@ -22,7 +22,7 @@ func init() {
 	listCmd.AddCommand(&grumble.Command{
 		Name:    "projects",
 		Help:    "list projects",
-		Aliases: []string{"proj", "projs"},
+		Aliases: []string{"p", "proj"},
 		Run: func(c *grumble.Context) error {
 			listProjects()
 			return nil
@@ -52,6 +52,31 @@ func init() {
 			return nil
 		},
 	})
+
+	listCmd.AddCommand(&grumble.Command{
+		Name:    "migrations",
+		Help:    "list migrations",
+		Aliases: []string{"m"},
+		Run: func(c *grumble.Context) error {
+			if ok := activeProjectCheck(); ok {
+				listMigrations()
+			}
+			return nil
+		},
+	})
+
+}
+
+func listMigrations() {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Machine Name", "Name", "Description", "Source", "Dest"})
+
+	for k := range global.Project.Migrations {
+		m := global.Project.Migrations[k]
+		table.Append([]string{m.Component.MachineName, m.Component.Name, m.Component.Description, m.SourceDb, m.DestinationDb})
+	}
+
+	table.Render()
 
 }
 
