@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 
@@ -23,7 +22,7 @@ func init() {
 	createCmd.AddCommand(&grumble.Command{
 		Name:    "project",
 		Help:    "create a project",
-		Aliases: []string{"proj"},
+		Aliases: []string{"p"},
 		Run: func(c *grumble.Context) error {
 			createProject()
 			return nil
@@ -33,7 +32,7 @@ func init() {
 	createCmd.AddCommand(&grumble.Command{
 		Name:    "database",
 		Help:    "create a database",
-		Aliases: []string{"db"},
+		Aliases: []string{"db", "d"},
 		Run: func(c *grumble.Context) error {
 			if ok := activeProjectCheck(); ok {
 				createDatabase()
@@ -66,15 +65,6 @@ func init() {
 		},
 	})
 
-}
-
-func activeProjectCheck() (ok bool) {
-	if global.Project.Component.MachineName == "" {
-		App.PrintError(errors.New("no active project"))
-		return false
-	}
-
-	return true
 }
 
 func createDatabase() {

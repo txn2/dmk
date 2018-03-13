@@ -5,6 +5,8 @@ import (
 	"os"
 	"regexp"
 
+	"fmt"
+
 	"github.com/cjimti/migration-kit/cfg"
 	"github.com/desertbit/grumble"
 	"github.com/olekukonko/tablewriter"
@@ -22,7 +24,7 @@ func init() {
 	listCmd.AddCommand(&grumble.Command{
 		Name:    "projects",
 		Help:    "list projects",
-		Aliases: []string{"p", "proj"},
+		Aliases: []string{"p"},
 		Run: func(c *grumble.Context) error {
 			listProjects()
 			return nil
@@ -32,7 +34,7 @@ func init() {
 	listCmd.AddCommand(&grumble.Command{
 		Name:    "databases",
 		Help:    "list databases",
-		Aliases: []string{"db", "dbs"},
+		Aliases: []string{"db", "d"},
 		Run: func(c *grumble.Context) error {
 			if ok := activeProjectCheck(); ok {
 				listDatabases()
@@ -44,7 +46,7 @@ func init() {
 	listCmd.AddCommand(&grumble.Command{
 		Name:    "queries",
 		Help:    "list queries",
-		Aliases: []string{"q", "qs", "query"},
+		Aliases: []string{"q"},
 		Run: func(c *grumble.Context) error {
 			if ok := activeProjectCheck(); ok {
 				listQueries()
@@ -85,7 +87,7 @@ func listMigrations() {
 	}
 
 	table.Render()
-
+	fmt.Println("Try \"desc m [MACHINE NAME]\" to describe a migration.")
 }
 
 func listDatabases() {
@@ -98,7 +100,7 @@ func listDatabases() {
 	}
 
 	table.Render()
-
+	fmt.Println("Try \"desc db [MACHINE NAME]\" to describe a database.")
 }
 
 func listQueries() {
@@ -111,6 +113,7 @@ func listQueries() {
 	}
 
 	table.Render()
+	fmt.Println("Try \"desc q [MACHINE NAME]\" to describe a query.")
 
 }
 
@@ -127,16 +130,8 @@ func listProjects() {
 	}
 
 	table.Render()
-
-}
-
-// GetDatabases returns an array slice of Database machine names
-func GetDatabaseMachineNames(project cfg.Project) (dbMachineNames []string) {
-	for k := range project.Databases {
-		dbMachineNames = append(dbMachineNames, k)
-	}
-
-	return dbMachineNames
+	fmt.Println("Try \"open p [MACHINE NAME]\" to open a project.")
+	fmt.Println("Try \"desc p [MACHINE NAME]\" to describe a project.")
 }
 
 // GetProjects returns an array slice of projects.

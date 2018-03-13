@@ -8,8 +8,9 @@ import (
 
 func init() {
 	listCmd := &grumble.Command{
-		Name: "open",
-		Help: "open components such as projects, databases, queries, transformations and migrations",
+		Name:    "open",
+		Help:    "open components such as projects, databases, queries, transformations and migrations",
+		Aliases: []string{"o"},
 	}
 
 	App.AddCommand(listCmd)

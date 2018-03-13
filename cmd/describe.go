@@ -32,7 +32,7 @@ func init() {
 		Name:      "project",
 		Help:      "describe a project",
 		Usage:     "describe project [machine_name]",
-		Aliases:   []string{"proj"},
+		Aliases:   []string{"p"},
 		AllowArgs: true,
 		Run: func(c *grumble.Context) error {
 			if len(c.Args) == 1 {
@@ -63,6 +63,94 @@ func init() {
 			return nil
 		},
 	})
+
+	listCmd.AddCommand(&grumble.Command{
+		Name:      "migration",
+		Help:      "describe a migration",
+		Usage:     "describe migration [machine_name]",
+		Aliases:   []string{"m"},
+		AllowArgs: true,
+		Run: func(c *grumble.Context) error {
+			if len(c.Args) == 1 {
+
+				if ok := activeProjectCheck(); ok {
+					describeMigration(c.Args[0])
+				}
+
+				return nil
+			}
+			fmt.Printf("Try: %s\n", c.Command.Usage)
+			fmt.Println("Try: \"ls m\" to list migrations.")
+			return nil
+		},
+	})
+
+	listCmd.AddCommand(&grumble.Command{
+		Name:      "database",
+		Help:      "describe a database",
+		Usage:     "describe database [machine_name]",
+		Aliases:   []string{"db", "d"},
+		AllowArgs: true,
+		Run: func(c *grumble.Context) error {
+			if len(c.Args) == 1 {
+
+				if ok := activeProjectCheck(); ok {
+					describeDatabase(c.Args[0])
+				}
+
+				return nil
+			}
+			fmt.Printf("Try: %s\n", c.Command.Usage)
+			fmt.Println("Try: \"ls d\" to list databases.")
+			return nil
+		},
+	})
+
+}
+
+func describeMigration(machineName string) {
+	if m, ok := global.Project.Migrations[machineName]; ok {
+		describeComponent(m.Component)
+
+		fmt.Printf("Source:\n")
+		if sourceDb, ok := global.Project.Databases[m.SourceDb]; ok {
+			fmt.Printf("\tDatabase:\n")
+			fmt.Printf("\t - %s [%s]\n", sourceDb.Component.Name, m.SourceDb)
+		}
+		if sourceQ, ok := global.Project.Queries[m.SourceQuery]; ok {
+			fmt.Printf("\tQuery:\n")
+			fmt.Printf("\t - %s [%s]\n", sourceQ.Component.Name, m.SourceQuery)
+			fmt.Printf("\t - Statement: \n\t    %s\n", sourceQ.Statement)
+		}
+
+		fmt.Println()
+		fmt.Printf("Destination:\n")
+		if destDb, ok := global.Project.Databases[m.DestinationDb]; ok {
+			fmt.Printf("\tDatabase:\n")
+			fmt.Printf("\t - %s [%s]\n", destDb.Component.Name, m.DestinationDb)
+		}
+		if destQ, ok := global.Project.Queries[m.DestinationQuery]; ok {
+			fmt.Printf("\tQuery:\n")
+			fmt.Printf("\t - %s [%s]\n", destQ.Component.Name, m.DestinationQuery)
+			fmt.Printf("\t - Statement: \n\t    %s\n", destQ.Statement)
+		}
+		fmt.Println()
+		return
+	}
+
+	fmt.Println("Can not find migration: " + machineName)
+	fmt.Println("Try \"ls m\"")
+}
+
+func describeDatabase(machineName string) {
+	if db, ok := global.Project.Databases[machineName]; ok {
+		describeComponent(db.Component)
+		// @TODO add details
+		return
+	}
+
+	fmt.Println("Can not find migration: " + machineName)
+	fmt.Println("Try \"ls m\"")
 }
 
 func describeQuery(machineName string) {
@@ -76,6 +164,7 @@ func describeQuery(machineName string) {
 	}
 
 	fmt.Println("Can not find query: " + machineName)
+	fmt.Println("Try \"ls q\"")
 }
 
 func describeProject(machineName string) {

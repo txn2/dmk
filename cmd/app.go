@@ -10,6 +10,8 @@ import (
 
 	"io/ioutil"
 
+	"errors"
+
 	"github.com/AlecAivazis/survey"
 	"github.com/cjimti/migration-kit/cfg"
 	"github.com/desertbit/grumble"
@@ -50,6 +52,8 @@ func init() {
 		fmt.Println(`              v0.0.1`)
 		fmt.Println()
 		fmt.Println(` type "help" for cmds`)
+		fmt.Println(` type "ls p" for a list of projects`)
+		fmt.Println(` type "create p" to create a project`)
 		fmt.Println()
 	})
 
@@ -74,6 +78,16 @@ func loadProject(filename string) (project cfg.Project, err error) {
 func SetProject(project cfg.Project) {
 	global.Project = project
 	App.SetPrompt("dmk » " + project.Component.MachineName + " » ")
+}
+
+func activeProjectCheck() (ok bool) {
+	if global.Project.Component.MachineName == "" {
+		App.PrintError(errors.New("no active project"))
+		fmt.Println("Try \"ls p\" for a list of projects.")
+		return false
+	}
+
+	return true
 }
 
 func machineName(name string) string {
