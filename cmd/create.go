@@ -145,6 +145,43 @@ func createMigration() {
 		Component: component,
 	}
 
+	// sources and destinations
+	queries := make([]string, 0)
+
+	for k := range global.Project.Queries {
+		queries = append(queries, k)
+	}
+
+	dbs := make([]string, 0)
+
+	for k := range global.Project.Databases {
+		dbs = append(dbs, k)
+	}
+
+	promptSelect := &survey.Select{
+		Message: "Choose a SOURCE Database:",
+		Options: dbs,
+	}
+	survey.AskOne(promptSelect, &migration.SourceDb, nil)
+
+	promptSelect = &survey.Select{
+		Message: "Choose a SOURCE Query:",
+		Options: queries,
+	}
+	survey.AskOne(promptSelect, &migration.SourceQuery, nil)
+
+	promptSelect = &survey.Select{
+		Message: "Choose a DESTINATION Database:",
+		Options: dbs,
+	}
+	survey.AskOne(promptSelect, &migration.DestinationDb, nil)
+
+	promptSelect = &survey.Select{
+		Message: "Choose a DESTINATION Query:",
+		Options: queries,
+	}
+	survey.AskOne(promptSelect, &migration.DestinationQuery, nil)
+
 	if global.Project.Migrations == nil {
 		global.Project.Migrations = map[string]cfg.Migration{}
 	}

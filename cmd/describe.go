@@ -30,7 +30,7 @@ func init() {
 
 	listCmd.AddCommand(&grumble.Command{
 		Name:      "project",
-		Help:      "describe project",
+		Help:      "describe a project",
 		Usage:     "describe project [machine_name]",
 		Aliases:   []string{"proj"},
 		AllowArgs: true,
@@ -44,6 +44,38 @@ func init() {
 		},
 	})
 
+	listCmd.AddCommand(&grumble.Command{
+		Name:      "query",
+		Help:      "describe a query",
+		Usage:     "describe query [machine_name]",
+		Aliases:   []string{"q"},
+		AllowArgs: true,
+		Run: func(c *grumble.Context) error {
+			if len(c.Args) == 1 {
+
+				if ok := activeProjectCheck(); ok {
+					describeQuery(c.Args[0])
+				}
+
+				return nil
+			}
+			fmt.Printf("Try: %s\n", c.Command.Usage)
+			return nil
+		},
+	})
+}
+
+func describeQuery(machineName string) {
+	if q, ok := global.Project.Queries[machineName]; ok {
+		describeComponent(q.Component)
+		fmt.Println("Statement:")
+		fmt.Println()
+		fmt.Printf("\t%s\n", q.Statement)
+		fmt.Println()
+		return
+	}
+
+	fmt.Println("Can not find query: " + machineName)
 }
 
 func describeProject(machineName string) {

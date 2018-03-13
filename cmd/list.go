@@ -69,11 +69,19 @@ func init() {
 
 func listMigrations() {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Machine Name", "Name", "Description", "Source", "Dest"})
+	table.SetHeader([]string{"Machine Name", "Name", "Description", "Source DB", "Source Query", "Dest DB", "Dest Query"})
 
 	for k := range global.Project.Migrations {
 		m := global.Project.Migrations[k]
-		table.Append([]string{m.Component.MachineName, m.Component.Name, m.Component.Description, m.SourceDb, m.DestinationDb})
+		table.Append([]string{
+			m.Component.MachineName,
+			m.Component.Name,
+			m.Component.Description,
+			m.SourceDb,
+			m.SourceQuery,
+			m.DestinationDb,
+			m.DestinationQuery,
+		})
 	}
 
 	table.Render()
@@ -95,11 +103,11 @@ func listDatabases() {
 
 func listQueries() {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Machine Name", "Name", "Description", "Statement"})
+	table.SetHeader([]string{"Machine Name", "Name", "Description"})
 
 	for k := range global.Project.Queries {
 		q := global.Project.Queries[k]
-		table.Append([]string{q.Component.MachineName, q.Component.Name, q.Component.Description, q.Statement})
+		table.Append([]string{q.Component.MachineName, q.Component.Name, q.Component.Description})
 	}
 
 	table.Render()
