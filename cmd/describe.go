@@ -85,7 +85,7 @@ func listing(keys []string) (tlist string) {
 func describeComponent(c cfg.Component) {
 
 	fmt.Println()
-	fmt.Printf("Compoent Kind: %s\n", c.Kind)
+	fmt.Printf("Component Kind: %s\n", c.Kind)
 	fmt.Println()
 	table := tablewriter.NewWriter(os.Stdout)
 	table.Append([]string{"MachineName", c.MachineName})

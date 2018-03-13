@@ -40,3 +40,9 @@ type Project struct {
 	Queries    map[string]Query     // map of query machine names to queries
 	Migrations map[string]Migration // map or migration machine names to migrations
 }
+
+// Currently supported operations: shift, concat, coalesce, extract, timestamp, uuid, default, pass and delete
+type TransformationSpec struct {
+	Operation string
+	Spec      map[string]interface{}
+}

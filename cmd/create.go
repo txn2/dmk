@@ -113,7 +113,7 @@ func createDatabase() {
 	saved := confirmAndSave(global.Project.Component.MachineName, global.Project)
 	if saved {
 		fmt.Println()
-		fmt.Printf("NOTICE: Project %s was saved.\n", name)
+		fmt.Printf("NOTICE: Database %s was saved.\n", name)
 	}
 }
 
@@ -153,7 +153,7 @@ func createMigration() {
 	saved := confirmAndSave(global.Project.Component.MachineName, global.Project)
 	if saved {
 		fmt.Println()
-		fmt.Printf("NOTICE: Project %s was saved.\n", name)
+		fmt.Printf("NOTICE: Migration %s was saved.\n", name)
 	}
 
 }
@@ -171,7 +171,7 @@ func createQuery() {
 	description := ""
 	prompt = &survey.Input{
 		Message: "Query Description:",
-		Help:    "Ex: `Gat all users from the user table.`",
+		Help:    "Ex: `Get all users from the user table.`",
 	}
 	survey.AskOne(prompt, &description, nil)
 
@@ -182,8 +182,16 @@ func createQuery() {
 		Description: description,
 	}
 
+	statement := ""
+	prompt = &survey.Input{
+		Message: "Statement Description:",
+		Help:    "Ex: `SELECT * FROM client_user;`",
+	}
+	survey.AskOne(prompt, &statement, nil)
+
 	query := cfg.Query{
 		Component: component,
+		Statement: statement,
 	}
 
 	if global.Project.Queries == nil {
@@ -194,7 +202,7 @@ func createQuery() {
 	saved := confirmAndSave(global.Project.Component.MachineName, global.Project)
 	if saved {
 		fmt.Println()
-		fmt.Printf("NOTICE: Project %s was saved.\n", name)
+		fmt.Printf("NOTICE: Query %s was saved.\n", name)
 	}
 
 }

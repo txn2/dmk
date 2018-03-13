@@ -87,7 +87,7 @@ func machineName(name string) string {
 	prompt := &survey.Input{
 		Message: "Machine Name:",
 		Help: "\n The Machine Name is used for file names and referencing components." +
-			"\n This should not container spaces or special characters other than - and _" +
+			"\n This should not contain spaces or special characters other than - and _" +
 			"\n The Default should be acceptable.",
 		Default: machineName,
 	}
