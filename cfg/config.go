@@ -15,7 +15,7 @@ type Credentials struct {
 
 type Database struct {
 	Component   Component
-	Driver      string
+	Driver      interface{}
 	Location    string
 	Credentials Credentials
 }
@@ -45,4 +45,8 @@ type Project struct {
 type TransformationSpec struct {
 	Operation string
 	Spec      map[string]interface{}
+}
+
+type CsvDriver struct {
+	FileLocation string
 }

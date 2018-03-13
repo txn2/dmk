@@ -22,12 +22,26 @@ func init() {
 	listCmd.AddCommand(&grumble.Command{
 		Name:    "projects",
 		Help:    "list projects",
-		Aliases: []string{"proj"},
+		Aliases: []string{"proj", "projs"},
 		Run: func(c *grumble.Context) error {
 			listProjects()
 			return nil
 		},
 	})
+
+	listCmd.AddCommand(&grumble.Command{
+		Name:    "databases",
+		Help:    "list projects",
+		Aliases: []string{"db", "dbs"},
+		Run: func(c *grumble.Context) error {
+			listDatabases()
+			return nil
+		},
+	})
+
+}
+
+func listDatabases() {
 
 }
 

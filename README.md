@@ -1,5 +1,29 @@
-# DMK - Data Migration Kit
+# [WIP] DMK - Data Migration Kit
 
-- Migrate data from one database to another.
-- Interactive config generation.
+Under development.
+
+## TODO
+
+- Specify base directory
+- Migration selectors for sources and destinations
+- CSV Driver
+- Driver implementations (for run)
+- Simple run CSV to MySQL
+
+-------
+
+## Development
+
+Run `go run ./dmk.go`
+
+Use `godep save` after adding any dependencies.
+
+
+#### Containers
+
+Containers for testing MySql and Cassandra databases.
+
+
+
+
 

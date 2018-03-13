@@ -15,6 +15,15 @@ func init() {
 		Name:    "describe",
 		Help:    "describe components such as projects, databases, queries, transformations and migrations",
 		Aliases: []string{"desc"},
+		Run: func(c *grumble.Context) error {
+			if global.Project.Component.MachineName != "" {
+				describeProject(global.Project.Component.MachineName)
+				return nil
+			}
+			fmt.Println("No active project or project specified.")
+			fmt.Println("Try \"desc PROJECT\" or \"list projects\"")
+			return nil
+		},
 	}
 
 	App.AddCommand(listCmd)

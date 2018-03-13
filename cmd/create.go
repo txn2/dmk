@@ -155,7 +155,6 @@ func createMigration() {
 		fmt.Println()
 		fmt.Printf("NOTICE: Migration %s was saved.\n", name)
 	}
-
 }
 
 func createQuery() {
@@ -184,7 +183,7 @@ func createQuery() {
 
 	statement := ""
 	prompt = &survey.Input{
-		Message: "Statement Description:",
+		Message: "Statement:",
 		Help:    "Ex: `SELECT * FROM client_user;`",
 	}
 	survey.AskOne(prompt, &statement, nil)
