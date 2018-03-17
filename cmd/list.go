@@ -67,6 +67,17 @@ func init() {
 		},
 	})
 
+	listCmd.AddCommand(&grumble.Command{
+		Name:    "drivers",
+		Help:    "list drivers",
+		Aliases: []string{"m"},
+		Run: func(c *grumble.Context) error {
+			//			data.DriverManager.
+			fmt.Printf("Drivers: %s\n", DriverManager.RegisteredDrivers())
+			return nil
+		},
+	})
+
 }
 
 func listMigrations() {

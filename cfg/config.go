@@ -1,5 +1,7 @@
 package cfg
 
+import "github.com/cjimti/migration-kit/driver"
+
 type Component struct {
 	Kind        string
 	Name        string
@@ -7,22 +9,10 @@ type Component struct {
 	Description string
 }
 
-type Credentials struct {
-	Component Component
-	Username  string
-	Password  string
-}
-
 type Database struct {
-	Component   Component
-	Driver      interface{}
-	Location    string
-	Credentials Credentials
-}
-
-type Query struct {
-	Component Component
-	Statement string
+	Component     Component
+	Driver        string
+	Configuration driver.Config
 }
 
 type Migration struct {
@@ -30,14 +20,13 @@ type Migration struct {
 	SourceDb           string // db machine name
 	DestinationDb      string // db machine name
 	SourceQuery        string // how to get the data
-	DestinationQuery   string // where to put the data
+	DestinationQuery   string // how to insert the data
 	TransformationSpec interface{}
 }
 
 type Project struct {
 	Component  Component
 	Databases  map[string]Database  // map of database machine names to databases
-	Queries    map[string]Query     // map of query machine names to queries
 	Migrations map[string]Migration // map or migration machine names to migrations
 }
 

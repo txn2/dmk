@@ -6,6 +6,7 @@ import (
 
 	"github.com/AlecAivazis/survey"
 	"github.com/cjimti/migration-kit/cfg"
+	"github.com/cjimti/migration-kit/driver"
 	"github.com/desertbit/grumble"
 	"github.com/go-yaml/yaml"
 )
@@ -94,6 +95,23 @@ func createDatabase() {
 	database := cfg.Database{
 		Component: component,
 	}
+
+	// configure the database
+	promptSelect := &survey.Select{
+		Message: "Choose a database driver:",
+		Options: DriverManager.RegisteredDrivers(),
+	}
+	survey.AskOne(promptSelect, &database.Driver, nil)
+
+	// configure the driver
+	dbDriver, err := DriverManager.GetDriver(database.Driver)
+	if err != nil {
+		App.PrintError(err)
+	}
+
+	database.Configuration = driver.Config{}
+
+	dbDriver.PopulateConfig(database.Configuration)
 
 	if global.Project.Databases == nil {
 		global.Project.Databases = map[string]cfg.Database{}

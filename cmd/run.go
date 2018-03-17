@@ -21,6 +21,7 @@ func init() {
 					return nil
 				}
 				fmt.Printf("Try: %s\n", c.Command.Usage)
+				fmt.Printf("Try: \"ls m\" for a list or migrations.\n")
 				return nil
 
 			}
@@ -35,4 +36,5 @@ func init() {
 func runMigration(machineName string) {
 
 	fmt.Println("Running Migration: " + machineName)
+
 }

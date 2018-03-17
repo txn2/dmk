@@ -14,6 +14,7 @@ import (
 
 	"github.com/AlecAivazis/survey"
 	"github.com/cjimti/migration-kit/cfg"
+	"github.com/cjimti/migration-kit/driver"
 	"github.com/desertbit/grumble"
 	"github.com/fatih/color"
 	"github.com/go-yaml/yaml"
@@ -40,8 +41,10 @@ var App = grumble.New(&grumble.Config{
 	},
 })
 
+var DriverManager = driver.DriverManager
+
 func init() {
-	global.Env = map[string]string{}
+	global.Env = make(map[string]string, 0)
 
 	App.SetPrintASCIILogo(func(a *grumble.App) {
 		fmt.Println(` Data Migration Kit`)
