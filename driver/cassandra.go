@@ -24,6 +24,11 @@ type Cassandra struct {
 	config  Config
 }
 
+// Configure (keys determined in ConfigSurvey)
+func (c *Cassandra) Configure(config Config) error {
+	return nil
+}
+
 // Execute for Driver interface. CSV ignores the query and args, reading
 // the entire file and streaming each record as lines are parsed.
 func (c *Cassandra) Execute(query string, args Args) (chan Record, error) {
@@ -33,10 +38,8 @@ func (c *Cassandra) Execute(query string, args Args) (chan Record, error) {
 	return recordChan, nil
 }
 
-// MakeConfig us implementation of Driver
-// it get's called when a user chooses and is used to create
-// a custom configuration that can be marshaled and used later
-func (c *Cassandra) PopulateConfig(config Config) error {
+// ConfigSurvey is an implementation of Driver
+func (c *Cassandra) ConfigSurvey(config Config) error {
 	fmt.Println("---- Cassandra Driver Configuration ----")
 
 	clusterList := ""
@@ -102,5 +105,5 @@ func (c *Cassandra) PopulateConfig(config Config) error {
 
 // Register this driver with the driver manager
 func init() {
-	DriverManager.AddDriver("cassandra", new(Cassandra))
+	DriverManager.AddDriver("cassandra", func() Driver { return new(Cassandra) })
 }

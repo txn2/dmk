@@ -16,9 +16,24 @@ type CSV struct {
 	config Config
 }
 
+// Configure (keys determined in ConfigSurvey)
+func (c *CSV) Configure(config Config) error {
+
+	// Validation
+	_, ok := config["filePath"]
+	if ok != true {
+		return errors.New("missing config key filePath")
+	}
+
+	c.config = config
+
+	return nil
+}
+
 // Execute for Driver interface. CSV ignores the query and args, reading
 // the entire file and streaming each record as lines are parsed.
 func (c *CSV) Execute(query string, args Args) (chan Record, error) {
+	// call Configure with a driver.Config first
 	if c.config == nil {
 		return nil, errors.New("CSV is not configured")
 	}
@@ -54,7 +69,8 @@ func (c *CSV) Execute(query string, args Args) (chan Record, error) {
 	return recordChan, nil
 }
 
-func (c *CSV) PopulateConfig(config Config) error {
+// ConfigSurvey is an implementation of Driver
+func (c *CSV) ConfigSurvey(config Config) error {
 	fmt.Println("---- CSV Driver Configuration ----")
 
 	filePath := ""
@@ -65,12 +81,10 @@ func (c *CSV) PopulateConfig(config Config) error {
 	survey.AskOne(prompt, &filePath, nil)
 	config["filePath"] = filePath
 
-	// populate
-	c.config = config
 	return nil
 }
 
 // Register this driver with the driver manager
 func init() {
-	DriverManager.AddDriver("csv", new(CSV))
+	DriverManager.AddDriver("csv", func() Driver { return new(CSV) })
 }

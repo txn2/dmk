@@ -14,7 +14,7 @@ import (
 func init() {
 	createCmd := &grumble.Command{
 		Name:    "create",
-		Help:    "create a projects, databases, queries and transformations",
+		Help:    "create projects, databases, and migrations",
 		Aliases: []string{"add"},
 	}
 
@@ -37,18 +37,6 @@ func init() {
 		Run: func(c *grumble.Context) error {
 			if ok := activeProjectCheck(); ok {
 				createDatabase()
-			}
-			return nil
-		},
-	})
-
-	createCmd.AddCommand(&grumble.Command{
-		Name:    "query",
-		Help:    "create a query",
-		Aliases: []string{"q"},
-		Run: func(c *grumble.Context) error {
-			if ok := activeProjectCheck(); ok {
-				createQuery()
 			}
 			return nil
 		},
@@ -104,14 +92,15 @@ func createDatabase() {
 	survey.AskOne(promptSelect, &database.Driver, nil)
 
 	// configure the driver
-	dbDriver, err := DriverManager.GetDriver(database.Driver)
+	dbDriver, err := DriverManager.GetNewDriver(database.Driver)
 	if err != nil {
 		App.PrintError(err)
 	}
 
 	database.Configuration = driver.Config{}
 
-	dbDriver.PopulateConfig(database.Configuration)
+	// configuration survey
+	dbDriver.ConfigSurvey(database.Configuration)
 
 	if global.Project.Databases == nil {
 		global.Project.Databases = map[string]cfg.Database{}
@@ -153,13 +142,6 @@ func createMigration() {
 		Component: component,
 	}
 
-	// sources and destinations
-	queries := make([]string, 0)
-
-	for k := range global.Project.Queries {
-		queries = append(queries, k)
-	}
-
 	dbs := make([]string, 0)
 
 	for k := range global.Project.Databases {
@@ -172,11 +154,11 @@ func createMigration() {
 	}
 	survey.AskOne(promptSelect, &migration.SourceDb, nil)
 
-	promptSelect = &survey.Select{
-		Message: "Choose a SOURCE Query:",
-		Options: queries,
+	prompt = &survey.Input{
+		Message: "SOURCE Query:",
+		Help:    "Ex: `SELECT id,username FROM users`",
 	}
-	survey.AskOne(promptSelect, &migration.SourceQuery, nil)
+	survey.AskOne(prompt, &migration.SourceQuery, nil)
 
 	promptSelect = &survey.Select{
 		Message: "Choose a DESTINATION Database:",
@@ -184,11 +166,11 @@ func createMigration() {
 	}
 	survey.AskOne(promptSelect, &migration.DestinationDb, nil)
 
-	promptSelect = &survey.Select{
-		Message: "Choose a DESTINATION Query:",
-		Options: queries,
+	prompt = &survey.Input{
+		Message: "DESTINATION Query:",
+		Help:    `Ex: INSERT INTO table_name JSON '{"id": "{{index .Amap "id"}}", "username": "{{index .Amap "username"}}"}`,
 	}
-	survey.AskOne(promptSelect, &migration.DestinationQuery, nil)
+	survey.AskOne(prompt, &migration.DestinationQuery, nil)
 
 	if global.Project.Migrations == nil {
 		global.Project.Migrations = map[string]cfg.Migration{}
@@ -200,55 +182,6 @@ func createMigration() {
 		fmt.Println()
 		fmt.Printf("NOTICE: Migration %s was saved.\n", name)
 	}
-}
-
-func createQuery() {
-	name := ""
-	prompt := &survey.Input{
-		Message: "Query Name:",
-		Help:    "Human readable name. Ex: `Get all users`",
-	}
-	survey.AskOne(prompt, &name, nil)
-
-	machineName := machineName(name)
-
-	description := ""
-	prompt = &survey.Input{
-		Message: "Query Description:",
-		Help:    "Ex: `Get all users from the user table.`",
-	}
-	survey.AskOne(prompt, &description, nil)
-
-	component := cfg.Component{
-		Kind:        "Query",
-		MachineName: machineName,
-		Name:        name,
-		Description: description,
-	}
-
-	statement := ""
-	prompt = &survey.Input{
-		Message: "Statement:",
-		Help:    "Ex: `SELECT * FROM client_user;`",
-	}
-	survey.AskOne(prompt, &statement, nil)
-
-	query := cfg.Query{
-		Component: component,
-		Statement: statement,
-	}
-
-	if global.Project.Queries == nil {
-		global.Project.Queries = map[string]cfg.Query{}
-	}
-
-	global.Project.Queries[machineName] = query
-	saved := confirmAndSave(global.Project.Component.MachineName, global.Project)
-	if saved {
-		fmt.Println()
-		fmt.Printf("NOTICE: Query %s was saved.\n", name)
-	}
-
 }
 
 func createProject() {

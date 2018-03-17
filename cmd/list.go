@@ -15,7 +15,7 @@ import (
 func init() {
 	listCmd := &grumble.Command{
 		Name:    "list",
-		Help:    "list components such as projects, databases, queries, transformations and migrations",
+		Help:    "list components such as projects, databases, and migrations",
 		Aliases: []string{"ls"},
 	}
 
@@ -44,18 +44,6 @@ func init() {
 	})
 
 	listCmd.AddCommand(&grumble.Command{
-		Name:    "queries",
-		Help:    "list queries",
-		Aliases: []string{"q"},
-		Run: func(c *grumble.Context) error {
-			if ok := activeProjectCheck(); ok {
-				listQueries()
-			}
-			return nil
-		},
-	})
-
-	listCmd.AddCommand(&grumble.Command{
 		Name:    "migrations",
 		Help:    "list migrations",
 		Aliases: []string{"m"},
@@ -68,9 +56,8 @@ func init() {
 	})
 
 	listCmd.AddCommand(&grumble.Command{
-		Name:    "drivers",
-		Help:    "list drivers",
-		Aliases: []string{"m"},
+		Name: "drivers",
+		Help: "list drivers",
 		Run: func(c *grumble.Context) error {
 			//			data.DriverManager.
 			fmt.Printf("Drivers: %s\n", DriverManager.RegisteredDrivers())
@@ -112,20 +99,6 @@ func listDatabases() {
 
 	table.Render()
 	fmt.Println("Try \"desc db [MACHINE NAME]\" to describe a database.")
-}
-
-func listQueries() {
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Machine Name", "Name", "Description"})
-
-	for k := range global.Project.Queries {
-		q := global.Project.Queries[k]
-		table.Append([]string{q.Component.MachineName, q.Component.Name, q.Component.Description})
-	}
-
-	table.Render()
-	fmt.Println("Try \"desc q [MACHINE NAME]\" to describe a query.")
-
 }
 
 func listProjects() {

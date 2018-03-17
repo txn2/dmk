@@ -36,8 +36,7 @@ var App = grumble.New(&grumble.Config{
 	HelpSubCommands:       true,
 
 	Flags: func(f *grumble.Flags) {
-		f.String("d", "directory", "DEFAULT", "set an alternative root directory path")
-		f.Bool("v", "verbose", false, "enable verbose mode")
+		f.String("p", "project", "", "sepcify a project")
 	},
 })
 
@@ -60,6 +59,10 @@ func init() {
 		fmt.Println()
 	})
 
+	App.OnInit(func(a *grumble.App, flags grumble.FlagMap) error {
+		a.RunCommand([]string{"open", "p", flags.String("project")})
+		return nil
+	})
 }
 
 func loadProject(filename string) (project cfg.Project, err error) {
