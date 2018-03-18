@@ -15,7 +15,8 @@ type Config map[string]interface{}
 type Driver interface {
 	Configure(config Config) error
 	ConfigSurvey(config Config) error
-	Execute(query string, args Args) (chan Record, error)
+	Out(query string, args Args) (<-chan Record, error)
+	In(query string) error
 }
 
 // Manager types

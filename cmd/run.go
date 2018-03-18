@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 
 	"errors"
 
-	"github.com/davecgh/go-spew/spew"
+	"github.com/cjimti/migration-kit/driver"
 	"github.com/desertbit/grumble"
 )
 
@@ -50,7 +52,7 @@ func runMigration(machineName string) {
 	// get the source db
 	sourceDb, ok := global.Project.Databases[migration.SourceDb]
 	if ok != true {
-		App.PrintError(errors.New("no database found for " + machineName))
+		App.PrintError(errors.New("no source database found for " + migration.SourceDb))
 		return
 	}
 
@@ -62,14 +64,45 @@ func runMigration(machineName string) {
 	}
 
 	sourceDriver.Configure(sourceDb.Configuration)
-	//sourceDriver.Execute()
+	sourceRecordChan, err := sourceDriver.Out(migration.SourceQuery, driver.Args{})
+	if err != nil {
+		App.PrintError(err)
+		return
+	}
 
-	spew.Dump(sourceDriver)
+	// get the destination db
+	destinationDb, ok := global.Project.Databases[migration.DestinationDb]
+	if ok != true {
+		App.PrintError(errors.New("no destination database found for " + migration.DestinationDb))
+		return
+	}
 
-	// ask the db for a configured Driver
-	//fmt.Printf("Source Driver: %s\n", sourceDb.Driver)
-	//fmt.Printf("Source Config: %s\n", sourceDb.Configuration)
+	// get the destination driver
+	destinationDriver, err := DriverManager.GetNewDriver(destinationDb.Driver)
+	if err != nil {
+		App.PrintError(err)
+		return
+	}
 
-	// execute the source query
+	// configure destination driver
+	destinationDriver.Configure(destinationDb.Configuration)
+
+	for r := range sourceRecordChan {
+		tmpl, err := template.New("test").Parse(migration.DestinationQuery)
+		if err != nil {
+			panic(err)
+		}
+
+		var query bytes.Buffer
+		err = tmpl.Execute(&query, r)
+		if err != nil {
+			App.PrintError(err)
+			return
+		}
+
+		destinationDriver.In(query.String())
+	}
+
+	fmt.Printf("Done with loop...\n")
 
 }

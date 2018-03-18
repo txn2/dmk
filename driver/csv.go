@@ -1,7 +1,6 @@
 package driver
 
 import (
-	"encoding/csv"
 	"errors"
 	"fmt"
 	"io"
@@ -9,6 +8,7 @@ import (
 	"os"
 
 	"github.com/AlecAivazis/survey"
+	"github.com/recursionpharma/go-csv-map"
 )
 
 // CSV implements data.Driver
@@ -30,9 +30,15 @@ func (c *CSV) Configure(config Config) error {
 	return nil
 }
 
-// Execute for Driver interface. CSV ignores the query and args, reading
+// In for Driver interface. @TODO implementation
+func (c *CSV) In(query string) error {
+	fmt.Printf("CSV In is not yet implemented.\n")
+	return nil
+}
+
+// Out for Driver interface. CSV ignores the query and args, reading
 // the entire file and streaming each record as lines are parsed.
-func (c *CSV) Execute(query string, args Args) (chan Record, error) {
+func (c *CSV) Out(query string, args Args) (<-chan Record, error) {
 	// call Configure with a driver.Config first
 	if c.config == nil {
 		return nil, errors.New("CSV is not configured")
@@ -51,18 +57,34 @@ func (c *CSV) Execute(query string, args Args) (chan Record, error) {
 			return nil, err
 		}
 
-		r := csv.NewReader(csvIn)
-		for {
-			record, err := r.Read()
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			fmt.Println(record)
+		r := csvmap.NewReader(csvIn)
+		r.Columns, err = r.ReadHeader()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
 		}
+
+		go func() {
+			for {
+				rec, err := r.Read()
+				if err == io.EOF {
+					close(recordChan)
+					break
+				}
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				// convert csv record to Record
+				record := Record{}
+				for key, value := range rec {
+					record[key] = value
+				}
+
+				// send the record out the channel
+				recordChan <- record
+			}
+		}()
 
 	}
 

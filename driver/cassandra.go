@@ -26,15 +26,27 @@ type Cassandra struct {
 
 // Configure (keys determined in ConfigSurvey)
 func (c *Cassandra) Configure(config Config) error {
+	// @TODO make session
+
 	return nil
 }
 
-// Execute for Driver interface. CSV ignores the query and args, reading
+// In for Driver interface. @TODO implementation
+func (c *Cassandra) In(query string) error {
+	// @TODO check for session
+	// @TODO execute query on session
+	fmt.Printf("Cassandra not yet implemented.\nQUERY: %s\n", query)
+
+	return nil
+}
+
+// Out for Driver interface. CSV ignores the query and args, reading
 // the entire file and streaming each record as lines are parsed.
-func (c *Cassandra) Execute(query string, args Args) (chan Record, error) {
+func (c *Cassandra) Out(query string, args Args) (<-chan Record, error) {
 	fmt.Printf("Cassandra executor is not yet functional\n")
 
 	recordChan := make(chan Record, 1)
+
 	return recordChan, nil
 }
 
