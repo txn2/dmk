@@ -35,7 +35,3 @@ type TransformationSpec struct {
 	Operation string
 	Spec      map[string]interface{}
 }
-
-type CsvDriver struct {
-	FileLocation string
-}

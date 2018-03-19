@@ -4,11 +4,7 @@ Under development.
 
 ## TODO
 
-- Specify base directory
-- Migration selectors for sources and destinations
-- CSV Driver
-- Driver implementations (for run)
-- Simple run CSV to MySQL
+- Transformation
 
 -------
 

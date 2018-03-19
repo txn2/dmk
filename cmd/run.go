@@ -87,7 +87,10 @@ func runMigration(machineName string) {
 	// configure destination driver
 	destinationDriver.Configure(destinationDb.Configuration)
 
+	fmt.Printf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)
 	for r := range sourceRecordChan {
+		// @TODO Transform
+
 		tmpl, err := template.New("test").Parse(migration.DestinationQuery)
 		if err != nil {
 			panic(err)
@@ -100,9 +103,13 @@ func runMigration(machineName string) {
 			return
 		}
 
-		destinationDriver.In(query.String())
+		err = destinationDriver.In(query.String())
+		if err != nil {
+			App.PrintError(err)
+			return
+		}
 	}
 
-	fmt.Printf("Done with loop...\n")
+	fmt.Printf("Done with migration %s\n", migration.Component.MachineName)
 
 }
