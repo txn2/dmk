@@ -125,7 +125,7 @@ func describeDatabase(machineName string) {
 }
 
 func describeProject(machineName string) {
-	p, err := loadProject(machineName + "-mdk.yml")
+	p, err := loadProject(machineName + "-dmk.yml")
 	if err != nil {
 		App.PrintError(err)
 		return
