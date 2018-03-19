@@ -66,6 +66,11 @@ func (c *Cassandra) Configure(config Config) error {
 	return nil
 }
 
+// Done for Driver interface.
+func (C *Cassandra) Done() error {
+	return nil
+}
+
 // In for Driver interface. @TODO implementation
 func (c *Cassandra) In(query string) error {
 

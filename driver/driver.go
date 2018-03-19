@@ -13,10 +13,11 @@ type Config map[string]interface{}
 
 // Driver managed configuration and of a database and executes queries against it.
 type Driver interface {
-	Configure(config Config) error
-	ConfigSurvey(config Config) error
-	Out(query string, args Args) (<-chan Record, error)
-	In(query string) error
+	Configure(config Config) error                      // Takes a config map
+	ConfigSurvey(config Config) error                   // Interactive config generator
+	Out(query string, args Args) (<-chan Record, error) // outbound data
+	In(query string) error                              // inbound data
+	Done() error                                        // finalization tasks when user is done with Driver
 }
 
 // Manager types

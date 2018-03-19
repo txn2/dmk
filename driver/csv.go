@@ -30,6 +30,11 @@ func (c *CSV) Configure(config Config) error {
 	return nil
 }
 
+// Done for Driver interface.
+func (C *CSV) Done() error {
+	return nil
+}
+
 // In for Driver interface. @TODO implementation
 func (c *CSV) In(query string) error {
 	fmt.Printf("CSV In is not yet implemented.\n")
