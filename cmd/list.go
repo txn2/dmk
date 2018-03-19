@@ -109,7 +109,7 @@ func listProjects() {
 	projects, _ := GetProjects()
 
 	for _, p := range projects {
-		filename := p.Component.MachineName + "-mdk.yml"
+		filename := p.Component.MachineName + "-dmk.yml"
 		table.Append([]string{p.Component.MachineName, p.Component.Name, filename, p.Component.Description})
 	}
 
@@ -130,7 +130,7 @@ func GetProjects() (projects []cfg.Project, err error) {
 
 		// if file ends with -mdk.yml it's a project file
 		// load it and get the name
-		match, _ := regexp.MatchString("-mdk\\.yml$", filename)
+		match, _ := regexp.MatchString("-dmk\\.yml$", filename)
 
 		if match {
 			project, _ := loadProject(filename)

@@ -41,6 +41,34 @@
 			"Rev": "7f97868eec74b32b0982dd158a51a446d1da7eb5"
 		},
 		{
+			"ImportPath": "github.com/gocql/gocql",
+			"Comment": "pre-node-events-589-g1303a32",
+			"Rev": "1303a32993a1242a6fb58dc497a3b8a54ffd257d"
+		},
+		{
+			"ImportPath": "github.com/gocql/gocql/internal/lru",
+			"Comment": "pre-node-events-589-g1303a32",
+			"Rev": "1303a32993a1242a6fb58dc497a3b8a54ffd257d"
+		},
+		{
+			"ImportPath": "github.com/gocql/gocql/internal/murmur",
+			"Comment": "pre-node-events-589-g1303a32",
+			"Rev": "1303a32993a1242a6fb58dc497a3b8a54ffd257d"
+		},
+		{
+			"ImportPath": "github.com/gocql/gocql/internal/streams",
+			"Comment": "pre-node-events-589-g1303a32",
+			"Rev": "1303a32993a1242a6fb58dc497a3b8a54ffd257d"
+		},
+		{
+			"ImportPath": "github.com/golang/snappy",
+			"Rev": "553a641470496b2327abcac10b36396bd98e45c9"
+		},
+		{
+			"ImportPath": "github.com/hailocab/go-hostpool",
+			"Rev": "e80d13ce29ede4452c43dea11e79b9bc8a15b478"
+		},
+		{
 			"ImportPath": "github.com/mattn/go-colorable",
 			"Comment": "v0.0.9-13-g7dc3415",
 			"Rev": "7dc3415be66d7cc68bf0182f35c8d31f8d2ad8a7"
@@ -64,6 +92,10 @@
 			"Rev": "b8a9be070da40449e501c3c4730a889e42d87a9e"
 		},
 		{
+			"ImportPath": "github.com/recursionpharma/go-csv-map",
+			"Rev": "792523c65ae9a3a204e84946779986cafe34035a"
+		},
+		{
 			"ImportPath": "golang.org/x/sys/unix",
 			"Rev": "37707fdb30a5b38865cfb95e5aab41707daec7fd"
 		},
@@ -76,6 +108,11 @@
 			"ImportPath": "gopkg.in/AlecAivazis/survey.v1/terminal",
 			"Comment": "v1.4.2",
 			"Rev": "9f89d9dd66613216993dc300f9f3dbae9c3c9bda"
+		},
+		{
+			"ImportPath": "gopkg.in/inf.v0",
+			"Comment": "v0.9.0",
+			"Rev": "3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4"
 		}
 	]
 }

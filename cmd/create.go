@@ -220,7 +220,7 @@ func createProject() {
 }
 
 func confirmAndSave(machineName string, component interface{}) bool {
-	filename := machineName + "-mdk.yml"
+	filename := machineName + "-dmk.yml"
 
 	save := false
 	saveMessage := fmt.Sprintf("Save project file %s?", filename)

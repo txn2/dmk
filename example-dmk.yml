@@ -1,0 +1,39 @@
+component:
+  kind: Project
+  name: Example
+  machineName: example
+  description: This is a example using the provided examples. See README.md
+databases:
+  cassandra_docker_local:
+    component:
+      kind: Database
+      name: Cassandra Dev
+      machineName: cassandra_docker_local
+      description: Example data on the cassandra cluster
+    driver: cassandra
+    configuration:
+      clusterList: localhost:39042
+      consistency: Quorum
+      keyspace: example
+  example_csv_data:
+    component:
+      kind: Database
+      name: Example CSV Data
+      machineName: example_csv_data
+      description: A CSV file with example data.
+    driver: csv
+    configuration:
+      filePath: ./dev/example.csv
+migrations:
+  import_example_data:
+    component:
+      kind: Migration
+      name: Import Example Data
+      machineName: import_example_data
+      description: Import example data from a csv into cassandra.
+    sourcedb: example_csv_data
+    destinationdb: cassandra_docker_local
+    sourcequery: '*'
+    destinationquery: 'INSERT INTO migration_data JSON ''{"id": "{{.id}}", "name":
+      "{{.Name}}"}'''
+    transformationspec: null

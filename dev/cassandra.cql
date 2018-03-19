@@ -2,6 +2,6 @@ CREATE KEYSPACE example WITH replication = {'class': 'SimpleStrategy', 'replicat
 
 CREATE TABLE IF NOT EXISTS example.migration_data (
     id text,
-    Name text,
+    name text,
     PRIMARY KEY(id)
 );

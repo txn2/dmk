@@ -1,5 +1,6 @@
 .idea
-*.yml
+*-dmk.yml
+!example-dmk.yml
 
 # Binaries for programs and plugins
 *.exe
