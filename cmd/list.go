@@ -78,9 +78,7 @@ func listMigrations() {
 			m.Component.Name,
 			m.Component.Description,
 			m.SourceDb,
-			m.SourceQuery,
 			m.DestinationDb,
-			m.DestinationQuery,
 		})
 	}
 

@@ -42,6 +42,7 @@ Use `godep save` after adding any dependencies.
 Containers for testing MySql and Cassandra databases.
 
 
+INSERT INTO migration_data JSON '{"id": "{{.id}}", "name": "{{.Name}}"}'
 
-
-
+console.log("im inside the DMK!")
+data.something = "Hello DMK"

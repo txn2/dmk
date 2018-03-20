@@ -16,22 +16,16 @@ type Database struct {
 }
 
 type Migration struct {
-	Component          Component
-	SourceDb           string // db machine name
-	DestinationDb      string // db machine name
-	SourceQuery        string // how to get the data
-	DestinationQuery   string // how to insert the data
-	TransformationSpec interface{}
+	Component            Component
+	SourceDb             string // db machine name
+	DestinationDb        string // db machine name
+	SourceQuery          string // how to get the data
+	DestinationQuery     string // how to insert the data
+	TransformationScript string // js script for specialized data processing
 }
 
 type Project struct {
 	Component  Component
 	Databases  map[string]Database  // map of database machine names to databases
 	Migrations map[string]Migration // map or migration machine names to migrations
-}
-
-// Currently supported operations: shift, concat, coalesce, extract, timestamp, uuid, default, pass and delete
-type TransformationSpec struct {
-	Operation string
-	Spec      map[string]interface{}
 }

@@ -148,29 +148,44 @@ func createMigration() {
 		dbs = append(dbs, k)
 	}
 
-	promptSelect := &survey.Select{
+	sourceDbPrompt := &survey.Select{
 		Message: "Choose a SOURCE Database:",
 		Options: dbs,
 	}
-	survey.AskOne(promptSelect, &migration.SourceDb, nil)
+	survey.AskOne(sourceDbPrompt, &migration.SourceDb, nil)
 
-	prompt = &survey.Input{
+	sourceQueryPrompt := &survey.Editor{
 		Message: "SOURCE Query:",
 		Help:    "Ex: `SELECT id,username FROM users`",
 	}
-	survey.AskOne(prompt, &migration.SourceQuery, nil)
+	survey.AskOne(sourceQueryPrompt, &migration.SourceQuery, nil)
 
-	promptSelect = &survey.Select{
+	script := false
+	promptBool := &survey.Confirm{
+		Message: "Does this data require a script for transformation?",
+	}
+	survey.AskOne(promptBool, &script, nil)
+
+	if script == true {
+		scriptPrompt := &survey.Editor{
+			Message: "Javascript is sent an object named \"data\".",
+			Help:    "Manipulate the \"data\" object with javascript",
+		}
+		survey.AskOne(scriptPrompt, &migration.TransformationScript, nil)
+	}
+
+	destDbPrompt := &survey.Select{
 		Message: "Choose a DESTINATION Database:",
 		Options: dbs,
 	}
-	survey.AskOne(promptSelect, &migration.DestinationDb, nil)
+	survey.AskOne(destDbPrompt, &migration.DestinationDb, nil)
 
-	prompt = &survey.Input{
+	dqPrompt := &survey.Editor{
 		Message: "DESTINATION Query:",
-		Help:    `Ex: INSERT INTO table_name JSON '{"id": "{{index .Amap "id"}}", "username": "{{index .Amap "username"}}"}`,
+		Help: `Ex: INSERT INTO table_name JSON '{"id": "{{.id"}}", "username": "{{.username"}}"}` +
+			"\nsee: https://golang.org/pkg/text/template/",
 	}
-	survey.AskOne(prompt, &migration.DestinationQuery, nil)
+	survey.AskOne(dqPrompt, &migration.DestinationQuery, nil)
 
 	if global.Project.Migrations == nil {
 		global.Project.Migrations = map[string]cfg.Migration{}

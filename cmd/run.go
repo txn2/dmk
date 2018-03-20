@@ -9,6 +9,7 @@ import (
 
 	"github.com/cjimti/migration-kit/driver"
 	"github.com/desertbit/grumble"
+	"github.com/robertkrimen/otto"
 )
 
 func init() {
@@ -87,9 +88,12 @@ func runMigration(machineName string) {
 	// configure destination driver
 	destinationDriver.Configure(destinationDb.Configuration)
 
+	// javascript virtual machine
+	script := migration.TransformationScript
+	jsVm := otto.New()
+
 	fmt.Printf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)
 	for r := range sourceRecordChan {
-		// @TODO Transform
 
 		tmpl, err := template.New("test").Parse(migration.DestinationQuery)
 		if err != nil {
@@ -97,7 +101,20 @@ func runMigration(machineName string) {
 		}
 
 		var query bytes.Buffer
+
+		if script != "" {
+			jsVm.Set("data", r)
+			jsVm.Run(script)
+
+			if value, err := jsVm.Get("data"); err == nil {
+				retRec, _ := value.Export()
+				r = retRec.(driver.Record)
+			}
+
+		}
+
 		err = tmpl.Execute(&query, r)
+
 		if err != nil {
 			App.PrintError(err)
 			return

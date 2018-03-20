@@ -25,15 +25,22 @@ databases:
     configuration:
       filePath: ./dev/example.csv
 migrations:
-  import_example_data:
+  example_csv_to_cassandra:
     component:
       kind: Migration
-      name: Import Example Data
-      machineName: import_example_data
-      description: Import example data from a csv into cassandra.
+      name: Example CSV to Cassandra
+      machineName: example_csv_to_cassandra
+      description: Load add example data from CSV into cassandra
     sourcedb: example_csv_data
     destinationdb: cassandra_docker_local
-    sourcequery: '*'
-    destinationquery: 'INSERT INTO migration_data JSON ''{"id": "{{.id}}", "name":
-      "{{.Name}}"}'''
-    transformationspec: null
+    sourcequery: |
+      *
+    destinationquery: |
+      INSERT INTO migration_data JSON '{"id": "{{.id}}", "name": "{{.Name}}"}'
+    transformationscript: |
+      console.log("Im inside the DMK!")
+      data.Something = "Hello DMK"
+      if (data.id === "3") { console.log("GOT 3") }
+      console.log(time.
+      data.Name = data.Name + " from js"
+
