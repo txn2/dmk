@@ -110,6 +110,8 @@ func runMigration(machineName string) {
 		}
 	}
 
+	destinationDriver.Done()
+
 	fmt.Printf("Done with migration %s\n", migration.Component.MachineName)
 
 }
