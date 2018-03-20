@@ -9,7 +9,7 @@ import (
 
 	"github.com/cjimti/migration-kit/driver"
 	"github.com/desertbit/grumble"
-	"github.com/robertkrimen/otto"
+	"github.com/mcuadros/go-candyjs"
 )
 
 func init() {
@@ -88,12 +88,62 @@ func runMigration(machineName string) {
 	// configure destination driver
 	destinationDriver.Configure(destinationDb.Configuration)
 
-	// javascript virtual machine
+	// javascript transformation script
 	script := migration.TransformationScript
-	jsVm := otto.New()
+
+	// Javascript engine,
+	// see http://duktape.org/ and https://github.com/olebedev/go-duktape
+	// see https://github.com/mcuadros/go-candyjs
+	ctx := candyjs.NewContext()
+	defer ctx.DestroyHeap()
+	storage := make(map[string]interface{})
 
 	fmt.Printf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)
-	for r := range sourceRecordChan {
+
+	// iterate over the sourceRecordChan for driver.Record objects
+	for record := range sourceRecordChan {
+
+		// modify r, driver.Record
+		if script != "" {
+			skipRecord := false
+			endMigration := false
+
+			ctx.PushGlobalGoFunction("getStorage", func() *map[string]interface{} {
+				return &storage
+			})
+
+			ctx.PushGlobalGoFunction("sendStorage", func(s map[string]interface{}) {
+				storage = s
+			})
+
+			ctx.PushGlobalGoFunction("getRecord", func() driver.Record {
+				return record
+			})
+
+			ctx.PushGlobalGoFunction("sendRecord", func(r driver.Record) {
+				record = r
+			})
+
+			ctx.PushGlobalGoFunction("skip", func() {
+				skipRecord = true
+			})
+
+			ctx.PushGlobalGoFunction("end", func() {
+				endMigration = true
+			})
+
+			ctx.EvalString(migration.TransformationScript)
+
+			// If the transformation script wants us to skip this record
+			if skipRecord {
+				continue
+			}
+
+			// If the transformation script wants us to skip this record
+			if endMigration {
+				return
+			}
+		}
 
 		tmpl, err := template.New("test").Parse(migration.DestinationQuery)
 		if err != nil {
@@ -101,19 +151,7 @@ func runMigration(machineName string) {
 		}
 
 		var query bytes.Buffer
-
-		if script != "" {
-			jsVm.Set("data", r)
-			jsVm.Run(script)
-
-			if value, err := jsVm.Get("data"); err == nil {
-				retRec, _ := value.Export()
-				r = retRec.(driver.Record)
-			}
-
-		}
-
-		err = tmpl.Execute(&query, r)
+		err = tmpl.Execute(&query, record)
 
 		if err != nil {
 			App.PrintError(err)
