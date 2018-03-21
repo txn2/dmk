@@ -69,14 +69,13 @@ func init() {
 
 func listMigrations() {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Machine Name", "Name", "Description", "Source DB", "Source Query", "Dest DB", "Dest Query"})
+	table.SetHeader([]string{"Machine Name", "Description", "Source DB", "Dest DB"})
 
 	for k := range global.Project.Migrations {
 		m := global.Project.Migrations[k]
 		table.Append([]string{
 			m.Component.MachineName,
-			m.Component.Name,
-			m.Component.Description,
+			fmt.Sprintf("%s: %s", m.Component.Name, m.Component.Description),
 			m.SourceDb,
 			m.DestinationDb,
 		})
