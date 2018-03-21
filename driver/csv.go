@@ -31,7 +31,7 @@ func (c *CSV) Configure(config Config) error {
 }
 
 // Done for Driver interface.
-func (C *CSV) Done() error {
+func (c *CSV) Done() error {
 	return nil
 }
 

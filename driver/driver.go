@@ -58,5 +58,5 @@ func NewManager() *Manager {
 	}
 }
 
-// where drivers register
+// DriverManager is where drivers register.
 var DriverManager = NewManager()

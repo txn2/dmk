@@ -67,7 +67,7 @@ func (c *Cassandra) Configure(config Config) error {
 }
 
 // Done for Driver interface.
-func (C *Cassandra) Done() error {
+func (c *Cassandra) Done() error {
 	return nil
 }
 

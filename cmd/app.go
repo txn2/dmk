@@ -25,6 +25,8 @@ var global struct {
 	Env     map[string]string
 }
 
+// App is the DMK CLI
+// see http://github.com/desertbit/grumble
 var App = grumble.New(&grumble.Config{
 	Name:                  "DMK",
 	Description:           "Data migration kit.",
@@ -40,8 +42,10 @@ var App = grumble.New(&grumble.Config{
 	},
 })
 
+// DriverManager manages the available database drivers.
 var DriverManager = driver.DriverManager
 
+// init the cmd package
 func init() {
 	global.Env = make(map[string]string, 0)
 
@@ -68,6 +72,7 @@ func init() {
 	})
 }
 
+// loadProject loads a project from yaml data
 func loadProject(filename string) (project cfg.Project, err error) {
 	ymlData, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -84,11 +89,14 @@ func loadProject(filename string) (project cfg.Project, err error) {
 	return project, nil
 }
 
+// SetProject sets a project as the active project
 func SetProject(project cfg.Project) {
 	global.Project = project
 	App.SetPrompt("dmk » " + project.Component.MachineName + " » ")
 }
 
+// activeProjectCheck is a simple check to see if we have a current
+// active project.
 func activeProjectCheck() (ok bool) {
 	if global.Project.Component.MachineName == "" {
 		App.PrintError(errors.New("no active project"))
@@ -99,6 +107,7 @@ func activeProjectCheck() (ok bool) {
 	return true
 }
 
+// machineName makes a string with unsafe characters replaced
 func machineName(name string) string {
 	reg, err := regexp.Compile("[^a-zA-Z0-9]+")
 	if err != nil {
@@ -120,6 +129,7 @@ func machineName(name string) string {
 	return machineName
 }
 
+// fileExists checks for the existence of a file
 func fileExists(file string) bool {
 	if _, err := os.Stat(file); err == nil {
 		return true

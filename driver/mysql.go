@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // driver import
 )
 
 // MySql implements data.Driver
@@ -131,10 +131,6 @@ func (m *MySql) Out(query string, args Args) (<-chan Record, error) {
 		// fell out of loop
 		close(recordChan)
 
-		err = rows.Err()
-		if err != nil {
-			errors.New(err.Error())
-		}
 	}()
 
 	return recordChan, nil

@@ -1,5 +1,7 @@
 # [WIP] DMK - Data Migration Kit
 
+[![Build Status](https://travis-ci.org/cjimti/migration-kit.svg?branch=master)](https://travis-ci.org/cjimti/migration-kit)
+
 Under development.
 
 ## TODO
