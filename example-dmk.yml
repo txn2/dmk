@@ -32,7 +32,7 @@ databases:
       description: ""
     driver: mysql
     configuration:
-      databaseHost: 127.0.0.1
+      databaseHost: localhost
       databasePort: 33306
       username: root
       databaseName: migration_data
@@ -101,5 +101,5 @@ migrations:
     sourcequery: |
       SELECT * FROM migration_data;
     destinationquery: |
-      INSERT INTO migration_data JSON '{"id": "{{.id}}", "name": "{{.Name}}"}'
+      INSERT INTO migration_data JSON '{"id": "{{.id}}", "name": "{{.name}}"}'
     transformationscript: ""

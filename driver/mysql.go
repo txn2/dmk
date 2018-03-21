@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey"
-	"github.com/davecgh/go-spew/spew"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -96,60 +95,47 @@ func (m *MySql) Out(query string, args Args) (<-chan Record, error) {
 	database := m.db
 
 	rows, err := database.Query(query)
-
 	if err != nil {
-		println("ROWS ERROR: " + err.Error())
-		return nil, errors.New(err.Error())
+		return nil, err
 	}
 
-	cols, _ := rows.Columns()
-
+	cols, err := rows.Columns()
 	if err != nil {
-		println("COLS ERROR: " + err.Error())
-		return nil, errors.New(err.Error())
+		return nil, err
 	}
-	defer rows.Close()
 
-	println("HERE I AM")
+	go func() {
+		defer rows.Close()
+		for rows.Next() {
 
-	for rows.Next() {
-		println("IN ROWS NEXT")
-		// Create a slice of interface{}'s to represent each column,
-		// and a second slice to contain pointers to each item in the columns slice.
-		columns := make([]interface{}, len(cols))
-		columnPointers := make([]interface{}, len(cols))
-		for i := range columns {
-			columnPointers[i] = &columns[i]
+			colsRef := make([]string, len(cols))
+			columnPointers := make([]interface{}, len(cols))
+			for i := range cols {
+				columnPointers[i] = &colsRef[i]
+			}
+
+			err = rows.Scan(columnPointers...)
+			if err != nil {
+				panic(err.Error())
+			}
+
+			record := Record{}
+			for i, col := range cols {
+				cp := columnPointers[i]
+				record[col] = *cp.(*string)
+			}
+
+			recordChan <- record
 		}
 
-		// Scan the result into the column pointers...
-		if err := rows.Scan(columnPointers...); err != nil {
+		// fell out of loop
+		close(recordChan)
+
+		err = rows.Err()
+		if err != nil {
 			errors.New(err.Error())
 		}
-
-		record := Record{}
-		for i, colName := range cols {
-			val := columnPointers[i].(interface{})
-			vv := val.(interface{})
-			record[colName] = *vv.(*interface{})
-
-			spew.Dump(*columnPointers[i].(*interface{}))
-		}
-		s := "this is a test for myke"
-		val := make(map[string]interface{})
-		val["test"] = &s
-		//fmt.Printf("%s", val)
-
-		vv := val["test"].(interface{})
-
-		spew.Dump(*vv.(*string))
-		// send the record out the channel
-		recordChan <- record
-	}
-	err = rows.Err()
-	if err != nil {
-		errors.New(err.Error())
-	}
+	}()
 
 	return recordChan, nil
 }
