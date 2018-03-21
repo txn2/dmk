@@ -51,10 +51,10 @@ func init() {
 
 	App.SetPrintASCIILogo(func(a *grumble.App) {
 		fmt.Println(` Data Migration Kit`)
-		fmt.Println(`  ____  _____ _____ `)
-		fmt.Println(` |    \|     |  |  |`)
-		fmt.Println(` |  |  | | | |    -|`)
-		fmt.Println(` |____/|_|_|_|__|__|`)
+		fmt.Println(`  ___  _____ _____ `)
+		fmt.Println(` |   \|     |  |  |`)
+		fmt.Println(` | |  | | | |    -|`)
+		fmt.Println(` |___/|_|_|_|__|__|`)
 		fmt.Println(`              v0.0.1`)
 		fmt.Println()
 		fmt.Println(` type "help" for cmds`)
