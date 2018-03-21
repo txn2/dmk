@@ -19,11 +19,14 @@ func init() {
 		Usage:     "run [MIGRATION]",
 		Aliases:   []string{"r"},
 		AllowArgs: true,
+		Flags: func(f *grumble.Flags) {
+			f.Bool("d", "dry-run", false, "Dry run outputs the first 5 records.")
+		},
 		Run: func(c *grumble.Context) error {
 			if ok := activeProjectCheck(); ok {
 
 				if len(c.Args) == 1 {
-					runMigration(c.Args[0])
+					runMigration(c.Args[0], c.Flags)
 					return nil
 				}
 				fmt.Printf("Try: %s\n", c.Command.Usage)
@@ -39,9 +42,15 @@ func init() {
 
 }
 
-func runMigration(machineName string) {
+func runMigration(machineName string, f grumble.FlagMap) {
+
+	dryRun := f.Bool("dry-run")
 
 	fmt.Println("Running Migration: " + machineName)
+
+	if dryRun {
+		fmt.Printf("\n>> This is a DRY RUN. No data will be migrated. <<\n\n")
+	}
 
 	// get the migration
 	migration, ok := global.Project.Migrations[machineName]
@@ -98,6 +107,11 @@ func runMigration(machineName string) {
 	defer ctx.DestroyHeap()
 	storage := make(map[string]interface{})
 
+	queryTemplate, err := template.New("query").Parse(migration.DestinationQuery)
+	if err != nil {
+		panic(err)
+	}
+
 	fmt.Printf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)
 
 	// iterate over the sourceRecordChan for driver.Record objects
@@ -145,14 +159,12 @@ func runMigration(machineName string) {
 			}
 		}
 
-		tmpl, err := template.New("test").Parse(migration.DestinationQuery)
-		if err != nil {
-			panic(err)
+		if dryRun {
+			return
 		}
 
 		var query bytes.Buffer
-		err = tmpl.Execute(&query, record)
-
+		err = queryTemplate.Execute(&query, record)
 		if err != nil {
 			App.PrintError(err)
 			return

@@ -60,7 +60,10 @@ func init() {
 	})
 
 	App.OnInit(func(a *grumble.App, flags grumble.FlagMap) error {
-		a.RunCommand([]string{"open", "p", flags.String("project")})
+		project := flags.String("project")
+		if project != "" {
+			a.RunCommand([]string{"open", "p", flags.String("project")})
+		}
 		return nil
 	})
 }
