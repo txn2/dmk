@@ -36,6 +36,11 @@
 			"Rev": "507f6050b8568533fb3f5504de8e5205fa62a114"
 		},
 		{
+			"ImportPath": "github.com/go-sql-driver/mysql",
+			"Comment": "v1.3-59-g1a676ac",
+			"Rev": "1a676ac6e4dce68e9303a1800773861350374a9e"
+		},
+		{
 			"ImportPath": "github.com/go-yaml/yaml",
 			"Comment": "v2.1.1",
 			"Rev": "7f97868eec74b32b0982dd158a51a446d1da7eb5"
@@ -84,8 +89,17 @@
 			"Rev": "a9d6d1e4dc51df2130326793d49971f238839169"
 		},
 		{
+			"ImportPath": "github.com/mcuadros/go-candyjs",
+			"Comment": "v1.0.0rc1-3-gd703dfa",
+			"Rev": "d703dfa5153a4276b8a4783d985793595228073d"
+		},
+		{
 			"ImportPath": "github.com/mgutz/ansi",
 			"Rev": "9520e82c474b0a04dd04f8a40959027271bab992"
+		},
+		{
+			"ImportPath": "github.com/olebedev/go-duktape",
+			"Rev": "abf0ba0be5d5d36b1f9266463cc320b9a5ab224e"
 		},
 		{
 			"ImportPath": "github.com/olekukonko/tablewriter",
