@@ -3,11 +3,13 @@
 [![Build Status](https://travis-ci.org/cjimti/migration-kit.svg?branch=master)](https://travis-ci.org/cjimti/migration-kit)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cjimti/migration-kit)](https://goreportcard.com/report/github.com/cjimti/migration-kit)
 
-Under development.
+![DMK - Data Migration Kit](./docs/dmk.jpg)
 
-## TODO
+## Work in Progress
 
-- Transformation
+This project is under development.
+
+
 
 -------
 
@@ -44,8 +46,3 @@ Use `godep save` after adding any dependencies.
 
 Containers for testing MySql and Cassandra databases.
 
-
-INSERT INTO migration_data JSON '{"id": "{{.id}}", "name": "{{.Name}}"}'
-
-console.log("im inside the DMK!")
-data.something = "Hello DMK"
