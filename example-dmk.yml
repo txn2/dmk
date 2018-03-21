@@ -24,6 +24,20 @@ databases:
     driver: csv
     configuration:
       filePath: ./dev/example.csv
+  mysql_dev:
+    component:
+      kind: Database
+      name: MySql Dev
+      machineName: mysql_dev
+      description: ""
+    driver: mysql
+    configuration:
+      databaseHost: localhost
+      databasePort: 33306
+      username: root
+      databaseName: migration_data
+      credentials:
+        password: example
 migrations:
   example_csv_to_cassandra:
     component:
@@ -76,5 +90,16 @@ migrations:
         print("Record id is 2 so let's skip it");
         skip();
       }
-
-
+  example_mysql_to_cassandra:
+    component:
+      kind: Migration
+      name: Example MySql to Cassandra
+      machineName: example_mysql_to_cassandra
+      description: Get and add example data from MySql to cassandra
+    sourcedb: mysql_dev
+    destinationdb: cassandra_docker_local
+    sourcequery: |
+      SELECT * FROM migration_data;
+    destinationquery: |
+      INSERT INTO migration_data JSON '{"id": "{{.id}}", "name": "{{.name}}"}'
+    transformationscript: ""
