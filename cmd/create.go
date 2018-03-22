@@ -4,9 +4,14 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"strconv"
+
+	"math/rand"
+
 	"github.com/AlecAivazis/survey"
 	"github.com/cjimti/migration-kit/cfg"
 	"github.com/cjimti/migration-kit/driver"
+	"github.com/cjimti/migration-kit/tunnel"
 	"github.com/desertbit/grumble"
 	"github.com/go-yaml/yaml"
 )
@@ -54,6 +59,124 @@ func init() {
 		},
 	})
 
+	createCmd.AddCommand(&grumble.Command{
+		Name:    "tunnel",
+		Help:    "create an ssh tunnel",
+		Aliases: []string{"t"},
+		Run: func(c *grumble.Context) error {
+			if ok := activeProjectCheck(); ok {
+				createTunnel()
+			}
+			return nil
+		},
+	})
+
+}
+
+func createTunnel() {
+	name := ""
+	namePrompt := &survey.Input{
+		Message: "Tunnel Name:",
+		Help:    "Human readable name. Ex: `ACME Production Server`",
+	}
+	survey.AskOne(namePrompt, &name, nil)
+
+	machineName := machineName(name)
+
+	description := ""
+	descPrompt := &survey.Input{
+		Message: "Tunnel Description:",
+		Help:    "Ex: `ACME production server with localhost access to mysql.`",
+	}
+	survey.AskOne(descPrompt, &description, nil)
+
+	component := cfg.Component{
+		Kind:        "Tunnel",
+		MachineName: machineName,
+		Name:        name,
+		Description: description,
+	}
+
+	fmt.Printf("Configure local endpoint (this machine):\n")
+
+	randPort := string(3000 + rand.Intn(3000))
+	localEp, err := createEndpoint("Local", "localhost", randPort)
+	if err != nil {
+		App.PrintError(err)
+		return
+	}
+
+	fmt.Printf("Configure server endpoint (tunnel to):\n")
+	serverEp, err := createEndpoint("Server", "", "22")
+	if err != nil {
+		App.PrintError(err)
+		return
+	}
+
+	fmt.Printf("Configure remote endpoint (destination):\n")
+	remoteEp, err := createEndpoint("Remote", "localhost", "3306")
+	if err != nil {
+		App.PrintError(err)
+		return
+	}
+
+	authUser := ""
+	authUserPrompt := &survey.Input{
+		Message: "SSH Username",
+		Help:    "Username used for server ssh connection.`",
+	}
+	survey.AskOne(authUserPrompt, &authUser, nil)
+
+	tunnelCfg := cfg.Tunnel{
+		Component: component,
+		Local:     localEp,
+		Server:    serverEp,
+		Remote:    remoteEp,
+		TunnelAuth: cfg.TunnelAuth{
+			User: authUser,
+		},
+	}
+
+	if global.Project.Tunnels == nil {
+		global.Project.Tunnels = map[string]cfg.Tunnel{}
+	}
+
+	global.Project.Tunnels[machineName] = tunnelCfg
+	saved := confirmAndSave(global.Project.Component.MachineName, global.Project)
+	if saved {
+		fmt.Println()
+		fmt.Printf("NOTICE: Tunnel %s was saved.\n", name)
+	}
+
+}
+
+func createEndpoint(name string, defH string, defP string) (tunnel.Endpoint, error) {
+
+	host := ""
+	hostPrompt := &survey.Input{
+		Message: name + " Host:",
+		Default: defH,
+	}
+	survey.AskOne(hostPrompt, &host, nil)
+
+	port := ""
+	portPrompt := &survey.Input{
+		Message: name + " Port:",
+		Default: defP,
+	}
+	survey.AskOne(portPrompt, &port, nil)
+
+	portN, err := strconv.Atoi(port)
+	if err != nil {
+		return tunnel.Endpoint{}, err
+	}
+
+	endpoint := tunnel.Endpoint{
+		Host: host,
+		Port: portN,
+	}
+
+	return endpoint, nil
 }
 
 func createDatabase() {
@@ -112,6 +235,7 @@ func createDatabase() {
 		fmt.Println()
 		fmt.Printf("NOTICE: Database %s was saved.\n", name)
 	}
+
 }
 
 func createMigration() {

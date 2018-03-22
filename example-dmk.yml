@@ -32,12 +32,12 @@ databases:
       description: ""
     driver: mysql
     configuration:
-      databaseHost: localhost
-      databasePort: 33306
-      username: root
-      databaseName: migration_data
       credentials:
         password: example
+      databaseHost: localhost
+      databaseName: migration_data
+      databasePort: 33306
+      username: root
 migrations:
   example_csv_to_cassandra:
     component:
@@ -103,3 +103,21 @@ migrations:
     destinationquery: |
       INSERT INTO migration_data JSON '{"id": "{{.id}}", "name": "{{.name}}"}'
     transformationscript: ""
+tunnels:
+  fuse_stage:
+    component:
+      kind: Tunnel
+      name: Fuse Stage
+      machineName: fuse_stage
+      description: Fuse stage server with access to dev and stg databases.
+    local:
+      host: localhost
+      port: 92867
+    server:
+      host: fuse.stg.sudjam.com
+      port: 22
+    remote:
+      host: localhost
+      port: 3306
+    tunnelAuth:
+      user: fusestg

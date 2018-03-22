@@ -59,12 +59,43 @@ func init() {
 		Name: "drivers",
 		Help: "list drivers",
 		Run: func(c *grumble.Context) error {
-			//			data.DriverManager.
-			fmt.Printf("Drivers: %s\n", DriverManager.RegisteredDrivers())
+			if ok := activeProjectCheck(); ok {
+				fmt.Printf("Drivers: %s\n", DriverManager.RegisteredDrivers())
+			}
 			return nil
 		},
 	})
 
+	listCmd.AddCommand(&grumble.Command{
+		Name:    "tunnels",
+		Help:    "list tunnels",
+		Aliases: []string{"t"},
+		Run: func(c *grumble.Context) error {
+			if ok := activeProjectCheck(); ok {
+				listTunnels()
+			}
+			return nil
+		},
+	})
+
+}
+
+func listTunnels() {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Machine Name", "Tunnel", "Local >", "Server >", "Remote"})
+
+	for k := range global.Project.Tunnels {
+		t := global.Project.Tunnels[k]
+		table.Append([]string{
+			t.Component.MachineName,
+			fmt.Sprintf("%s: %s", t.Component.Name, t.Component.Description),
+			fmt.Sprintf("%s:%d", t.Local.Host, t.Local.Port),
+			fmt.Sprintf("%s@%s:%d", t.TunnelAuth.User, t.Server.Host, t.Server.Port),
+			fmt.Sprintf("%s:%d", t.Remote.Host, t.Remote.Port),
+		})
+	}
+
+	table.Render()
 }
 
 func listMigrations() {

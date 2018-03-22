@@ -1,6 +1,9 @@
 package cfg
 
-import "github.com/cjimti/migration-kit/driver"
+import (
+	"github.com/cjimti/migration-kit/driver"
+	"github.com/cjimti/migration-kit/tunnel"
+)
 
 // Component is a generic key value set defining a component
 type Component struct {
@@ -13,7 +16,8 @@ type Component struct {
 // Database defines a database and it's configuration
 type Database struct {
 	Component     Component
-	Driver        string
+	Driver        string // driver type
+	Tunnel        string // tunnel machine name
 	Configuration driver.Config
 }
 
@@ -28,10 +32,26 @@ type Migration struct {
 	TransformationScript string // js script for specialized data processing
 }
 
+// TunnelAuth defines tunnel authentication method
+// TODO: Support ssh keys (currently only ssh agent)
+type TunnelAuth struct {
+	User string
+}
+
+// Tunnel defines an ssh tunnel
+type Tunnel struct {
+	Component  Component
+	Local      tunnel.Endpoint
+	Server     tunnel.Endpoint
+	Remote     tunnel.Endpoint
+	TunnelAuth TunnelAuth `yaml:"tunnelAuth"`
+}
+
 // Project defines an overall project consisting of
 // Databases and Migrations
 type Project struct {
 	Component  Component
 	Databases  map[string]Database  // map of database machine names to databases
-	Migrations map[string]Migration // map or migration machine names to migrations
+	Migrations map[string]Migration // map of migration machine names to migrations
+	Tunnels    map[string]Tunnel    // map of tunnels
 }
