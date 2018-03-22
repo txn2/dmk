@@ -4,6 +4,21 @@ component:
   machineName: example
   description: This is a example using the provided examples. See README.md
 databases:
+  cassandra_dev:
+    component:
+      kind: Database
+      name: Cassandra Dev
+      machineName: cassandra_dev
+      description: Example data on the cassandra cluster
+    driver: cassandra
+    tunnel: ""
+    configuration:
+      clusterList: localhost:39042
+      consistency: Quorum
+      credentials:
+        password: asdfasd
+        username: sfsfsad
+      keyspace: example
   cassandra_docker_local:
     component:
       kind: Database
@@ -11,9 +26,13 @@ databases:
       machineName: cassandra_docker_local
       description: Example data on the cassandra cluster
     driver: cassandra
+    tunnel: ""
     configuration:
       clusterList: localhost:39042
       consistency: Quorum
+      credentials:
+        password: asdfasd
+        username: sfsfsad
       keyspace: example
   example_csv_data:
     component:
@@ -22,6 +41,7 @@ databases:
       machineName: example_csv_data
       description: A CSV file with example data.
     driver: csv
+    tunnel: ""
     configuration:
       filePath: ./dev/example.csv
   mysql_dev:
@@ -31,6 +51,7 @@ databases:
       machineName: mysql_dev
       description: ""
     driver: mysql
+    tunnel: ""
     configuration:
       credentials:
         password: example
@@ -103,3 +124,21 @@ migrations:
     destinationquery: |
       INSERT INTO migration_data JSON '{"id": "{{.id}}", "name": "{{.name}}"}'
     transformationscript: ""
+tunnels:
+  example_server:
+    component:
+      kind: Tunnel
+      name: Example MySql Server
+      machineName: example_server
+      description: This example server runs a MySql database only accessable through localhost.
+    local:
+      host: localhost
+      port: 5081
+    server:
+      host: ssh.example.com
+      port: 22
+    remote:
+      host: localhost
+      port: 3306
+    tunnelAuth:
+      user: someUser

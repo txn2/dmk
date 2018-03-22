@@ -15,6 +15,7 @@ import (
 	"github.com/AlecAivazis/survey"
 	"github.com/cjimti/migration-kit/cfg"
 	"github.com/cjimti/migration-kit/driver"
+	"github.com/cjimti/migration-kit/tunnel"
 	"github.com/desertbit/grumble"
 	"github.com/fatih/color"
 	"github.com/go-yaml/yaml"
@@ -44,6 +45,7 @@ var App = grumble.New(&grumble.Config{
 
 // DriverManager manages the available database drivers.
 var DriverManager = driver.DriverManager
+var TunnelManager = tunnel.Manager{}
 
 // init the cmd package
 func init() {

@@ -2,7 +2,6 @@ package cfg
 
 import (
 	"github.com/cjimti/migration-kit/driver"
-	"github.com/cjimti/migration-kit/tunnel"
 )
 
 // Component is a generic key value set defining a component
@@ -38,12 +37,18 @@ type TunnelAuth struct {
 	User string
 }
 
+// Endpoint contains a host and port tunnel endpoint.
+type Endpoint struct {
+	Host string
+	Port int
+}
+
 // Tunnel defines an ssh tunnel
 type Tunnel struct {
 	Component  Component
-	Local      tunnel.Endpoint
-	Server     tunnel.Endpoint
-	Remote     tunnel.Endpoint
+	Local      Endpoint
+	Server     Endpoint
+	Remote     Endpoint
 	TunnelAuth TunnelAuth `yaml:"tunnelAuth"`
 }
 

@@ -11,7 +11,6 @@ import (
 	"github.com/AlecAivazis/survey"
 	"github.com/cjimti/migration-kit/cfg"
 	"github.com/cjimti/migration-kit/driver"
-	"github.com/cjimti/migration-kit/tunnel"
 	"github.com/desertbit/grumble"
 	"github.com/go-yaml/yaml"
 )
@@ -41,7 +40,7 @@ func init() {
 		Aliases: []string{"db", "d"},
 		Run: func(c *grumble.Context) error {
 			if ok := activeProjectCheck(); ok {
-				createDatabase()
+				createDatabase(cfg.Database{})
 			}
 			return nil
 		},
@@ -99,7 +98,7 @@ func createTunnel() {
 
 	fmt.Printf("Configure local endpoint (this machine):\n")
 
-	randPort := string(3000 + rand.Intn(3000))
+	randPort := strconv.Itoa(3000 + rand.Intn(3000))
 	localEp, err := createEndpoint("Local", "localhost", randPort)
 	if err != nil {
 		App.PrintError(err)
@@ -113,19 +112,19 @@ func createTunnel() {
 		return
 	}
 
+	authUser := ""
+	authUserPrompt := &survey.Input{
+		Message: "Server SSH Username",
+		Help:    "Username used for server ssh connection.`",
+	}
+	survey.AskOne(authUserPrompt, &authUser, nil)
+
 	fmt.Printf("Configure remote endpoint (destination):\n")
 	remoteEp, err := createEndpoint("Remote", "localhost", "3306")
 	if err != nil {
 		App.PrintError(err)
 		return
 	}
-
-	authUser := ""
-	authUserPrompt := &survey.Input{
-		Message: "SSH Username",
-		Help:    "Username used for server ssh connection.`",
-	}
-	survey.AskOne(authUserPrompt, &authUser, nil)
 
 	tunnelCfg := cfg.Tunnel{
 		Component: component,
@@ -150,7 +149,7 @@ func createTunnel() {
 
 }
 
-func createEndpoint(name string, defH string, defP string) (tunnel.Endpoint, error) {
+func createEndpoint(name string, defH string, defP string) (cfg.Endpoint, error) {
 
 	host := ""
 	hostPrompt := &survey.Input{
@@ -168,10 +167,10 @@ func createEndpoint(name string, defH string, defP string) (tunnel.Endpoint, err
 
 	portN, err := strconv.Atoi(port)
 	if err != nil {
-		return tunnel.Endpoint{}, err
+		return cfg.Endpoint{}, err
 	}
 
-	endpoint := tunnel.Endpoint{
+	endpoint := cfg.Endpoint{
 		Host: host,
 		Port: portN,
 	}
@@ -179,20 +178,25 @@ func createEndpoint(name string, defH string, defP string) (tunnel.Endpoint, err
 	return endpoint, nil
 }
 
-func createDatabase() {
+func createDatabase(database cfg.Database) {
 	name := ""
 	prompt := &survey.Input{
 		Message: "Database Name:",
 		Help:    "Human readable name. Ex: `ACME Production`",
+		Default: database.Component.Name,
 	}
 	survey.AskOne(prompt, &name, nil)
 
+	if database.Component.Name != "" {
+		name = database.Component.Name
+	}
 	machineName := machineName(name)
 
 	description := ""
 	prompt = &survey.Input{
 		Message: "Database Description:",
 		Help:    "Ex: `ACME production mysql`",
+		Default: database.Component.Description,
 	}
 	survey.AskOne(prompt, &description, nil)
 
@@ -203,14 +207,39 @@ func createDatabase() {
 		Description: description,
 	}
 
-	database := cfg.Database{
-		Component: component,
+	useTunnel := false
+	if database.Tunnel != "" {
+		useTunnel = true
 	}
 
+	useTunnelPrompt := &survey.Confirm{
+		Message: "Does database require a tunnel?",
+		Default: useTunnel,
+	}
+	survey.AskOne(useTunnelPrompt, &useTunnel, nil)
+
+	if useTunnel {
+		// get tunnel list
+		tunnels := make([]string, 0)
+
+		for k := range global.Project.Tunnels {
+			tunnels = append(tunnels, k)
+		}
+
+		tunnelPrompt := &survey.Select{
+			Message: "Choose a tunnel:",
+			Options: tunnels,
+		}
+		survey.AskOne(tunnelPrompt, &database.Tunnel, nil)
+	}
+
+	// add component to database
+	database.Component = component
 	// configure the database
 	promptSelect := &survey.Select{
 		Message: "Choose a database driver:",
 		Options: DriverManager.RegisteredDrivers(),
+		Default: database.Driver,
 	}
 	survey.AskOne(promptSelect, &database.Driver, nil)
 
@@ -220,7 +249,9 @@ func createDatabase() {
 		App.PrintError(err)
 	}
 
-	database.Configuration = driver.Config{}
+	if database.Configuration == nil {
+		database.Configuration = driver.Config{}
+	}
 
 	// configuration survey
 	dbDriver.ConfigSurvey(database.Configuration)

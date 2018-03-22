@@ -66,6 +66,17 @@ func runMigration(machineName string, f grumble.FlagMap) {
 		return
 	}
 
+	// setup a tunnel if needed
+	if sourceDb.Tunnel != "" {
+		if tunnelCfg, ok := global.Project.Tunnels[sourceDb.Tunnel]; ok {
+			err := TunnelManager.Tunnel(tunnelCfg)
+			if err != nil {
+				App.PrintError(err)
+				return
+			}
+		}
+	}
+
 	// get a driver for the type and configure it
 	sourceDriver, err := DriverManager.GetNewDriver(sourceDb.Driver)
 	if err != nil {

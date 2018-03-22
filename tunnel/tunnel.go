@@ -2,16 +2,65 @@ package tunnel
 
 import (
 	"fmt"
-
-	"net"
-
 	"io"
-
+	"net"
 	"os"
 
+	"github.com/cjimti/migration-kit/cfg"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 )
+
+// Manager handles the collection of tunnels
+type Manager struct {
+	// a map of of machine names to drivers
+	drivers map[string]*SSHTunnel
+}
+
+// Tunnel opens the specified tunnel if it is not
+// alreay open.
+func (tm *Manager) Tunnel(tunnelCfg cfg.Tunnel) error {
+	// TODO: close connection when we are done.
+	// see: https://stackoverflow.com/questions/12741386/how-to-know-tcp-connection-is-closed-in-golang-net-package
+
+	// already running?
+	if _, ok := tm.drivers[tunnelCfg.Component.MachineName]; ok {
+		return nil
+	}
+
+	sshConfig := &ssh.ClientConfig{
+		User: tunnelCfg.TunnelAuth.User,
+		Auth: []ssh.AuthMethod{
+			SSHAgent(),
+		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+
+	tunnel := &SSHTunnel{
+		Config: sshConfig,
+		Local: &Endpoint{
+			Host: tunnelCfg.Local.Host,
+			Port: tunnelCfg.Local.Port,
+		},
+		Server: &Endpoint{
+			Host: tunnelCfg.Server.Host,
+			Port: tunnelCfg.Server.Port,
+		},
+		Remote: &Endpoint{
+			Host: tunnelCfg.Remote.Host,
+			Port: tunnelCfg.Remote.Port,
+		},
+	}
+
+	err := tunnel.Start()
+	if err != nil {
+		return err
+	}
+
+	tm.drivers[tunnelCfg.Component.MachineName] = tunnel
+
+	return nil
+}
 
 // Endpoint contains a host and port tunnel endpoint.
 type Endpoint struct {
@@ -53,9 +102,6 @@ func (tunnel *SSHTunnel) Start() error {
 
 // forward a connection
 func (tunnel *SSHTunnel) forward(localConn net.Conn) {
-
-	// TODO: close connection when we are done.
-	// see: https://stackoverflow.com/questions/12741386/how-to-know-tcp-connection-is-closed-in-golang-net-package
 
 	serverConn, err := ssh.Dial("tcp", tunnel.Server.String(), tunnel.Config)
 	if err != nil {

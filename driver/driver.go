@@ -20,7 +20,7 @@ type Driver interface {
 	Done() error                                        // finalization tasks when user is done with Driver
 }
 
-// Manager types
+// Manager handles the collection of drivers
 type Manager struct {
 	// a map of of machine names to drivers
 	drivers map[string]func() Driver

@@ -110,20 +110,30 @@ func (c *Cassandra) ConfigSurvey(config Config) error {
 	fmt.Println("---- Cassandra Driver Configuration ----")
 
 	clusterList := ""
+	defClusterList := ""
+	if v, ok := config["clusterList"]; ok {
+		defClusterList = v.(string)
+	}
 	prompt := &survey.Input{
 		Message: "Nodes:",
 		Help:    "Comma separated list of nodes ex: \"n1.example.com,n2.example.com\"",
+		Default: defClusterList,
 	}
 	survey.AskOne(prompt, &clusterList, nil)
 	config["clusterList"] = clusterList
 
-	keyspace := ""
+	keySpace := ""
+	defKeySpace := ""
+	if v, ok := config["keyspace"]; ok {
+		defKeySpace = v.(string)
+	}
 	prompt = &survey.Input{
 		Message: "Keyspace:",
 		Help:    "The Cassandra keyspace to query against.",
+		Default: defKeySpace,
 	}
-	survey.AskOne(prompt, &keyspace, nil)
-	config["keyspace"] = keyspace
+	survey.AskOne(prompt, &keySpace, nil)
+	config["keyspace"] = keySpace
 
 	consistencyNames := make([]string, 0)
 	for _, v := range ConsistencyLookup {
@@ -131,32 +141,57 @@ func (c *Cassandra) ConfigSurvey(config Config) error {
 	}
 
 	consistency := ""
+	defConsistency := ""
+	if v, ok := config["consistency"]; ok {
+		defConsistency = v.(string)
+	}
 	promptSelect := &survey.Select{
 		Message: "Choose a Consistency Level:",
 		Options: consistencyNames,
+		Default: defConsistency,
 	}
 	survey.AskOne(promptSelect, &consistency, nil)
 	config["consistency"] = consistency
 
 	credentials := false
+	defCredentials := false
+	if _, ok := config["credentials"]; ok {
+		defCredentials = true
+	}
 	promptBool := &survey.Confirm{
 		Message: "Does this cluster require login credentials?",
+		Default: defCredentials,
 	}
 	survey.AskOne(promptBool, &credentials, nil)
 
 	if credentials == true {
 		credentialConfig := Config{}
+		defCredentialConfig := make(map[interface{}]interface{})
+
+		if _, ok := config["credentials"]; ok {
+			defCredentialConfig = config["credentials"].(map[interface{}]interface{})
+		}
 
 		username := ""
+		defUsername := ""
+		if v, ok := defCredentialConfig["username"]; ok {
+			defUsername = v.(string)
+		}
 		prompt = &survey.Input{
 			Message: "Username:",
+			Default: defUsername,
 		}
 		survey.AskOne(prompt, &username, nil)
 		credentialConfig["username"] = username
 
 		password := ""
+		defPassword := ""
+		if v, ok := defCredentialConfig["password"]; ok {
+			defPassword = v.(string)
+		}
 		prompt = &survey.Input{
 			Message: "Password:",
+			Default: defPassword,
 		}
 		survey.AskOne(prompt, &password, nil)
 		credentialConfig["password"] = password

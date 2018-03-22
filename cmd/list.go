@@ -118,11 +118,11 @@ func listMigrations() {
 
 func listDatabases() {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Machine Name", "Name", "Description"})
+	table.SetHeader([]string{"Machine Name", "Name", "Description", "Tunnel"})
 
 	for k := range global.Project.Databases {
 		db := global.Project.Databases[k]
-		table.Append([]string{db.Component.MachineName, db.Component.Name, db.Component.Description})
+		table.Append([]string{db.Component.MachineName, db.Component.Name, db.Component.Description, db.Tunnel})
 	}
 
 	table.Render()

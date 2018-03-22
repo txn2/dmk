@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 
+	"errors"
+
 	"github.com/AlecAivazis/survey"
 	"github.com/desertbit/grumble"
 )
@@ -10,7 +12,7 @@ import (
 func init() {
 	editCmd := &grumble.Command{
 		Name:    "edit",
-		Help:    "edit projects, databases, migrations and tunnels",
+		Help:    "edit databases",
 		Aliases: []string{"e"},
 	}
 
@@ -37,7 +39,7 @@ func init() {
 
 				dbMachineName := ""
 				dbPrompt := &survey.Select{
-					Message: "Choose a SOURCE Database:",
+					Message: "Choose a database to edit:",
 					Options: dbs,
 				}
 				survey.AskOne(dbPrompt, &dbMachineName, nil)
@@ -52,5 +54,12 @@ func init() {
 }
 
 func editDatabase(machineName string) {
-	fmt.Printf("Edit database %s", machineName)
+	fmt.Printf("Edit database %s\n", machineName)
+
+	if database, ok := global.Project.Databases[machineName]; ok {
+		createDatabase(database)
+		return
+	}
+
+	App.PrintError(errors.New("can't find database: " + machineName))
 }
