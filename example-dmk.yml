@@ -103,21 +103,3 @@ migrations:
     destinationquery: |
       INSERT INTO migration_data JSON '{"id": "{{.id}}", "name": "{{.name}}"}'
     transformationscript: ""
-tunnels:
-  fuse_stage:
-    component:
-      kind: Tunnel
-      name: Fuse Stage
-      machineName: fuse_stage
-      description: Fuse stage server with access to dev and stg databases.
-    local:
-      host: localhost
-      port: 92867
-    server:
-      host: fuse.stg.sudjam.com
-      port: 22
-    remote:
-      host: localhost
-      port: 3306
-    tunnelAuth:
-      user: fusestg
