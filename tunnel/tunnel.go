@@ -52,12 +52,11 @@ func (tm *Manager) Tunnel(tunnelCfg cfg.Tunnel) error {
 		},
 	}
 
-	err := tunnel.Start()
-	if err != nil {
-		return err
-	}
-
-	tm.drivers[tunnelCfg.Component.MachineName] = tunnel
+	// @TODO: add error chanel and close channel
+	go func() {
+		tunnel.Start()
+		tm.drivers[tunnelCfg.Component.MachineName] = tunnel
+	}()
 
 	return nil
 }
