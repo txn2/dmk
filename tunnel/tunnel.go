@@ -7,14 +7,15 @@ import (
 	"os"
 
 	"github.com/cjimti/migration-kit/cfg"
+	"github.com/davecgh/go-spew/spew"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 )
 
 // Manager handles the collection of tunnels
 type Manager struct {
-	// a map of of machine names to drivers
-	drivers map[string]*SSHTunnel
+	// a map of of machine names to tunnels
+	tunnels map[string]*SSHTunnel
 }
 
 // Tunnel opens the specified tunnel if it is not
@@ -22,9 +23,12 @@ type Manager struct {
 func (tm *Manager) Tunnel(tunnelCfg cfg.Tunnel) error {
 	// TODO: close connection when we are done.
 	// see: https://stackoverflow.com/questions/12741386/how-to-know-tcp-connection-is-closed-in-golang-net-package
+	if tm.tunnels == nil {
+		tm.tunnels = make(map[string]*SSHTunnel)
+	}
 
 	// already running?
-	if _, ok := tm.drivers[tunnelCfg.Component.MachineName]; ok {
+	if _, ok := tm.tunnels[tunnelCfg.Component.MachineName]; ok {
 		return nil
 	}
 
@@ -53,10 +57,9 @@ func (tm *Manager) Tunnel(tunnelCfg cfg.Tunnel) error {
 	}
 
 	// @TODO: add error chanel and close channel
-	go func() {
-		tunnel.Start()
-		tm.drivers[tunnelCfg.Component.MachineName] = tunnel
-	}()
+	go tunnel.Start()
+
+	tm.tunnels[tunnelCfg.Component.MachineName] = tunnel
 
 	return nil
 }
@@ -84,15 +87,21 @@ type SSHTunnel struct {
 
 // Start an ssh tunnel
 func (tunnel *SSHTunnel) Start() error {
+	fmt.Printf("Starting tunnel: %s.\n", tunnel.Local.String())
 	listener, err := net.Listen("tcp", tunnel.Local.String())
 	if err != nil {
+		fmt.Printf("Got error on Local listen: %s", tunnel.Local.String())
 		return err
 	}
+
+	fmt.Printf("Accept connections...\n")
+
 	defer listener.Close()
 
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
+			spew.Dump("Error on connection...\n")
 			return err
 		}
 		go tunnel.forward(conn)
@@ -101,7 +110,6 @@ func (tunnel *SSHTunnel) Start() error {
 
 // forward a connection
 func (tunnel *SSHTunnel) forward(localConn net.Conn) {
-
 	serverConn, err := ssh.Dial("tcp", tunnel.Server.String(), tunnel.Config)
 	if err != nil {
 		fmt.Printf("Server dial error: %s\n", err)

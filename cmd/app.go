@@ -79,6 +79,41 @@ func init() {
 		}
 		return nil
 	})
+
+	//// Open a tunnel
+	//localEndpoint := &tunnel.Endpoint{
+	//	Host: "localhost",
+	//	Port: 9027,
+	//}
+	//
+	//serverEndpoint := &tunnel.Endpoint{
+	//	Host: "fuse.stg.sudjam.com",
+	//	Port: 22,
+	//}
+	//
+	//remoteEndpoint := &tunnel.Endpoint{
+	//	Host: "localhost",
+	//	Port: 3306,
+	//}
+	//
+	//sshConfig := &ssh.ClientConfig{
+	//	User: "fusestg",
+	//	Auth: []ssh.AuthMethod{
+	//		tunnel.SSHAgent(),
+	//	},
+	//	HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	//}
+	//
+	//tnl := &tunnel.SSHTunnel{
+	//	Config: sshConfig,
+	//	Local:  localEndpoint,
+	//	Server: serverEndpoint,
+	//	Remote: remoteEndpoint,
+	//}
+	//
+	//// fire this off when we "Run" a tunnel
+	//go func() { tnl.Start() }()
+
 }
 
 // loadProject loads a project from yaml data

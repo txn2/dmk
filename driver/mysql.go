@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey"
-	"github.com/davecgh/go-spew/spew"
 	_ "github.com/go-sql-driver/mysql" // driver import
 )
 
@@ -18,23 +17,24 @@ type MySql struct {
 
 // Configure (keys determined in ConfigSurvey)
 func (m *MySql) Configure(config Config) error {
-	fmt.Printf("MySQL Configure Called")
-	spew.Dump(config)
+	fmt.Printf("Configuring a MySQL driver.\n")
 
 	// Validation
 	dbName, ok := config["databaseName"].(string)
 	if ok != true {
 		return errors.New("missing config key databaseName")
 	}
+
 	host, ok := config["databaseHost"].(string)
 	if ok != true {
 		return errors.New("missing config key databaseHost")
 	}
+
 	port, ok := config["databasePort"].(string)
 	if ok != true {
-		port = "33306"
-		//return errors.New("missing config key databasePort")
+		return errors.New("missing config key databasePort")
 	}
+
 	username, ok := config["username"].(string)
 	if ok != true {
 		return errors.New("missing credential key username")
@@ -57,8 +57,10 @@ func (m *MySql) Configure(config Config) error {
 		}
 	}
 
-	database, err := sql.Open("mysql", username+":"+password+"@tcp("+host+":"+port+")/"+dbName)
+	connectionStr := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", username, password, host, port, dbName)
+	fmt.Printf("MySql driver connecting to: %s\n", connectionStr)
 
+	database, err := sql.Open("mysql", connectionStr)
 	if err != nil {
 		return errors.New(err.Error())
 	}

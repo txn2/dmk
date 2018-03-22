@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"time"
 
 	"errors"
 
@@ -74,7 +75,12 @@ func runMigration(machineName string, f grumble.FlagMap) {
 				App.PrintError(err)
 				return
 			}
+
+			// take a breath while our tunnel connects
+			// TODO: detect connection
+			time.Sleep(2 * time.Second)
 		}
+
 	}
 
 	// get a driver for the type and configure it
@@ -84,7 +90,12 @@ func runMigration(machineName string, f grumble.FlagMap) {
 		return
 	}
 
-	sourceDriver.Configure(sourceDb.Configuration)
+	err = sourceDriver.Configure(sourceDb.Configuration)
+	if err != nil {
+		App.PrintError(err)
+		return
+	}
+
 	sourceRecordChan, err := sourceDriver.Out(migration.SourceQuery, driver.Args{})
 	if err != nil {
 		App.PrintError(err)

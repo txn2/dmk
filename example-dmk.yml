@@ -125,20 +125,3 @@ migrations:
       INSERT INTO migration_data JSON '{"id": "{{.id}}", "name": "{{.name}}"}'
     transformationscript: ""
 tunnels:
-  example_server:
-    component:
-      kind: Tunnel
-      name: Example MySql Server
-      machineName: example_server
-      description: This example server runs a MySql database only accessable through localhost.
-    local:
-      host: localhost
-      port: 5081
-    server:
-      host: ssh.example.com
-      port: 22
-    remote:
-      host: localhost
-      port: 3306
-    tunnelAuth:
-      user: someUser
