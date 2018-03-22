@@ -125,7 +125,7 @@ func describeDatabase(machineName string) {
 }
 
 func describeProject(machineName string) {
-	p, err := loadProject(machineName + "-dmk.yml")
+	p, err := loadProject(global.Directory + machineName + "-dmk.yml")
 	if err != nil {
 		App.PrintError(err)
 		return

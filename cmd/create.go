@@ -427,7 +427,7 @@ func confirmAndSave(machineName string, component interface{}) bool {
 		return false
 	}
 
-	err = ioutil.WriteFile("./"+filename, d, 0644)
+	err = ioutil.WriteFile(global.Directory+filename, d, 0644)
 	if err != nil {
 		fmt.Println(err.Error())
 		return false

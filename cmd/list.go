@@ -137,7 +137,7 @@ func listProjects() {
 	projects, _ := GetProjects()
 
 	for _, p := range projects {
-		filename := p.Component.MachineName + "-dmk.yml"
+		filename := global.Directory + p.Component.MachineName + "-dmk.yml"
 		table.Append([]string{p.Component.MachineName, p.Component.Name, filename, p.Component.Description})
 	}
 
@@ -148,7 +148,7 @@ func listProjects() {
 
 // GetProjects returns an array slice of projects.
 func GetProjects() (projects []cfg.Project, err error) {
-	files, err := ioutil.ReadDir("./")
+	files, err := ioutil.ReadDir(global.Directory)
 	if err != nil {
 		return projects, err
 	}
@@ -161,7 +161,7 @@ func GetProjects() (projects []cfg.Project, err error) {
 		match, _ := regexp.MatchString("-dmk\\.yml$", filename)
 
 		if match {
-			project, _ := loadProject(filename)
+			project, _ := loadProject(global.Directory + filename)
 			projects = append(projects, project)
 		}
 	}

@@ -22,8 +22,9 @@ import (
 )
 
 var global struct {
-	Project cfg.Project
-	Env     map[string]string
+	Project   cfg.Project
+	Directory string // base directory for commandline interaction with projects
+	Env       map[string]string
 }
 
 // App is the DMK CLI
@@ -39,7 +40,8 @@ var App = grumble.New(&grumble.Config{
 	HelpSubCommands:       true,
 
 	Flags: func(f *grumble.Flags) {
-		f.String("p", "project", "", "sepcify a project")
+		f.String("p", "project", "", "specify a project")
+		f.String("d", "directory", "./", "specify a directory")
 	},
 })
 
@@ -66,6 +68,11 @@ func init() {
 	})
 
 	App.OnInit(func(a *grumble.App, flags grumble.FlagMap) error {
+		// Set the base directory
+		global.Directory = flags.String("directory")
+		App.SetPrompt("dmk [" + global.Directory + "] » ")
+
+		// Get the default project from the command line if specified
 		project := flags.String("project")
 		if project != "" {
 			a.RunCommand([]string{"open", "p", flags.String("project")})
@@ -94,7 +101,7 @@ func loadProject(filename string) (project cfg.Project, err error) {
 // SetProject sets a project as the active project
 func SetProject(project cfg.Project) {
 	global.Project = project
-	App.SetPrompt("dmk » " + project.Component.MachineName + " » ")
+	App.SetPrompt("dmk [" + global.Directory + "] » " + project.Component.MachineName + " » ")
 }
 
 // activeProjectCheck is a simple check to see if we have a current
