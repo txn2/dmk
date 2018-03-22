@@ -55,7 +55,7 @@ func init() {
 		fmt.Println(` |   \|     |  |  |`)
 		fmt.Println(` | |  | | | |    -|`)
 		fmt.Println(` |___/|_|_|_|__|__|`)
-		fmt.Println(`              v0.0.1`)
+		fmt.Println(`             v0.0.1`)
 		fmt.Println()
 		fmt.Println(` type "help" for cmds`)
 		fmt.Println(` type "ls p" for a list of projects`)
