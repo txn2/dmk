@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey"
+	"github.com/davecgh/go-spew/spew"
 	_ "github.com/go-sql-driver/mysql" // driver import
 )
 
@@ -17,6 +18,9 @@ type MySql struct {
 
 // Configure (keys determined in ConfigSurvey)
 func (m *MySql) Configure(config Config) error {
+	fmt.Printf("MySQL Configure Called")
+	spew.Dump(config)
+
 	// Validation
 	dbName, ok := config["databaseName"].(string)
 	if ok != true {
