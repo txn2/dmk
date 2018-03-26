@@ -3,7 +3,7 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"html/template"
+	"text/template"
 	"time"
 
 	"errors"
