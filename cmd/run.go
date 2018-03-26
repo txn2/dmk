@@ -8,6 +8,7 @@ import (
 
 	"errors"
 
+	"github.com/Masterminds/sprig"
 	"github.com/cjimti/migration-kit/driver"
 	"github.com/desertbit/grumble"
 	"github.com/mcuadros/go-candyjs"
@@ -129,7 +130,7 @@ func runMigration(machineName string, f grumble.FlagMap) {
 	defer ctx.DestroyHeap()
 	storage := make(map[string]interface{})
 
-	queryTemplate, err := template.New("query").Parse(migration.DestinationQuery)
+	queryTemplate, err := template.New("query").Funcs(sprig.FuncMap()).Parse(migration.DestinationQuery)
 	if err != nil {
 		panic(err)
 	}
