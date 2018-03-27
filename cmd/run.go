@@ -130,7 +130,7 @@ func runMigration(machineName string, f grumble.FlagMap) {
 	defer ctx.DestroyHeap()
 	storage := make(map[string]interface{})
 
-	queryTemplate, err := template.New("query").Funcs(sprig.FuncMap()).Parse(migration.DestinationQuery)
+	queryTemplate, err := template.New("query").Funcs(sprig.TxtFuncMap()).Parse(migration.DestinationQuery)
 	if err != nil {
 		panic(err)
 	}
