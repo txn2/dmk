@@ -10,11 +10,6 @@ This project is under development.
 [![Build Status](https://travis-ci.org/cjimti/migration-kit.svg?branch=master)](https://travis-ci.org/cjimti/migration-kit)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cjimti/migration-kit)](https://goreportcard.com/report/github.com/cjimti/migration-kit)
 
-[![DMK - Data Migration Kit](./docs/dmk.jpg)](https://github.com/cjimti/migration-kit)
-
-
-
-
 -------
 
 ## Testing
