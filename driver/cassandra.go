@@ -53,9 +53,10 @@ func (c *Cassandra) Configure(config Config) error {
 	}
 
 	cluster.Keyspace = config["keyspace"].(string)
+	cluster.NumConns = 1
 
 	// @TODO implement consistency lookup (for not default to Quorum)
-	cluster.Consistency = gocql.Quorum
+	cluster.Consistency = gocql.One
 	session, err := cluster.CreateSession()
 	if err != nil {
 		panic(err)

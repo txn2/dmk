@@ -1,13 +1,17 @@
-# [WIP] DMK - Data Migration Kit
+![Data Migration Kit](docs/dmk-880.png)
+
+
+## Work in Progress
+
+This project is under development.
+
+# DMK - Data Migration Kit
 
 [![Build Status](https://travis-ci.org/cjimti/migration-kit.svg?branch=master)](https://travis-ci.org/cjimti/migration-kit)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cjimti/migration-kit)](https://goreportcard.com/report/github.com/cjimti/migration-kit)
 
 [![DMK - Data Migration Kit](./docs/dmk.jpg)](https://github.com/cjimti/migration-kit)
 
-## Work in Progress
-
-This project is under development.
 
 
 
@@ -37,7 +41,7 @@ $ docker run -it --rm --net host cassandra cqlsh localhost 39042
 
 ## Development
 
-Run `go run ./dmk.go`
+Run `go run ./dmk.go -d ./examples/`
 
 Use `godep save` after adding any dependencies.
 
