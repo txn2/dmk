@@ -98,10 +98,12 @@ func (c *Cassandra) In(query string) error {
 
 // Out for Driver interface. CSV ignores the query and args, reading
 // the entire file and streaming each record as lines are parsed.
-func (c *Cassandra) Out(query string, args Args) (<-chan Record, error) {
+func (c *Cassandra) Out(query string, args DataMap) (<-chan Record, error) {
 	fmt.Printf("Cassandra executor is not yet functional\n")
 
 	recordChan := make(chan Record, 1)
+
+	// check for args
 
 	return recordChan, nil
 }

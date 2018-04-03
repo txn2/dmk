@@ -73,43 +73,45 @@ migrations:
     destinationquery: |
       INSERT INTO migration_data JSON '{"id": "{{.id}}", "name": "{{.Name}}"}'
     transformationscript: |
-      // Print a generic message.
-      print("Im Javascript inside the DMK!");
-
       // Get the current record.
       var rec = getRecord();
 
-      // Print some information about the record. Demonstrate access
-      // from hash key and access as object attribute.
-      print("Record Name" + rec["Name"] + " id: " + rec.id);
+      if (rec.id < 3) {
+        // Print a generic message.
+        print("Im Javascript inside the DMK!");
 
-      // Modify an attribute of the record
-      rec.Name = rec.Name + " from javascript!";
+        // Print some information about the record. Demonstrate access
+        // from hash key and access as object attribute.
+        print("Record Name" + rec["Name"] + " id: " + rec.id);
 
-      // Send the record back to DMK
-      sendRecord(rec);
+        // Modify an attribute of the record
+        rec.Name = rec.Name + " from javascript!";
 
-      // Get a persistant data store (hash map)
-      var storage = getStorage();
+        // Send the record back to DMK
+        sendRecord(rec);
 
-      // Initilize a key in the store if it does not exist.
-      if (!storage["someval"]) { storage["someval"] = 0 };
+        // Get a persistant data store (hash map)
+        var storage = getStorage();
 
-      // Modify a value in the store.
-      storage["someval"]++;
+        // Initilize a key in the store if it does not exist.
+        if (!storage["someval"]) { storage["someval"] = 0 };
 
-      // Send store back the DMK
-      sendStorage(storage);
+        // Modify a value in the store.
+        storage["someval"]++;
 
-      // Print the new value from the data store to deminstrate its
-      // persistance.
-      print("Someval: " + storage["someval"]);
+        // Send store back the DMK
+        sendStorage(storage);
 
-      // Demonstrate skipping the migration of a record
-      // with a conditional.
-      if (rec.id == 2) {
-        print("Record id is 2 so let's skip it");
-        skip();
+        // Print the new value from the data store to deminstrate its
+        // persistance.
+        print("Someval: " + storage["someval"]);
+
+        // Demonstrate skipping the migration of a record
+        // with a conditional.
+        if (rec.id == 2) {
+          print("Record id is 2 so let's skip it");
+          skip();
+        }
       }
   example_mysql_to_cassandra:
     component:
@@ -122,6 +124,6 @@ migrations:
     sourcequery: |
       SELECT * FROM migration_data;
     destinationquery: |
-      INSERT INTO migration_data JSON '{"id": "{{.id}}", "name": "{{.name}}"}'
+      INSERT INTO migration_data JSON '{"id": {{.id}}, "name": "{{.name}}"}'
     transformationscript: ""
 tunnels:

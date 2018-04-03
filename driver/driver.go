@@ -2,22 +2,47 @@ package driver
 
 import "errors"
 
+type DataMap interface {
+	Get(key string) interface{}
+	Set(key string, value interface{})
+}
+
 // Record is a map of a single database record
 type Record map[string]interface{}
 
+// Get a value from a Record
+func (r Record) Get(key string) interface{} {
+	return r[key]
+}
+
+// Set a value on a Record
+func (r Record) Set(key string, value interface{}) {
+	r[key] = value
+}
+
 // Args are used for populating a query
 type Args map[string]interface{}
+
+// Get a value from Args
+func (r Args) Get(key string) interface{} {
+	return r[key]
+}
+
+// Set a value on Args
+func (r Args) Set(key string, value interface{}) {
+	r[key] = value
+}
 
 // Config is a map or configuration data specific to a specialized Driver
 type Config map[string]interface{}
 
 // Driver managed configuration and of a database and executes queries against it.
 type Driver interface {
-	Configure(config Config) error                      // Takes a config map
-	ConfigSurvey(config Config) error                   // Interactive config generator
-	Out(query string, args Args) (<-chan Record, error) // outbound data
-	In(query string) error                              // inbound data
-	Done() error                                        // finalization tasks when user is done with Driver
+	Configure(config Config) error                         // Takes a config map
+	ConfigSurvey(config Config) error                      // Interactive config generator
+	Out(query string, args DataMap) (<-chan Record, error) // outbound data
+	In(query string) error                                 // inbound data
+	Done() error                                           // finalization tasks when user is done with Driver
 }
 
 // Manager handles the collection of drivers
