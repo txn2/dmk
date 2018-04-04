@@ -51,12 +51,3 @@ type Tunnel struct {
 	Remote     Endpoint
 	TunnelAuth TunnelAuth `yaml:"tunnelAuth"`
 }
-
-// Project defines an overall project consisting of
-// Databases and Migrations
-type Project struct {
-	Component  Component
-	Databases  map[string]Database  // map of database machine names to databases
-	Migrations map[string]Migration // map of migration machine names to migrations
-	Tunnels    map[string]Tunnel    // map of tunnels
-}

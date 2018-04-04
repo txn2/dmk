@@ -13,8 +13,8 @@ import (
 	"errors"
 
 	"github.com/AlecAivazis/survey"
-	"github.com/cjimti/migration-kit/cfg"
 	"github.com/cjimti/migration-kit/driver"
+	"github.com/cjimti/migration-kit/migrate"
 	"github.com/cjimti/migration-kit/tunnel"
 	"github.com/desertbit/grumble"
 	"github.com/fatih/color"
@@ -22,7 +22,7 @@ import (
 )
 
 var global struct {
-	Project   cfg.Project
+	Project   migrate.Project
 	Directory string // base directory for commandline interaction with projects
 	Env       map[string]string
 }
@@ -83,13 +83,13 @@ func init() {
 }
 
 // loadProject loads a project from yaml data
-func loadProject(filename string) (project cfg.Project, err error) {
+func loadProject(filename string) (project migrate.Project, err error) {
 	ymlData, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return project, err
 	}
 
-	project = cfg.Project{}
+	project = migrate.Project{}
 
 	err = yaml.Unmarshal([]byte(ymlData), &project)
 	if err != nil {
@@ -100,7 +100,7 @@ func loadProject(filename string) (project cfg.Project, err error) {
 }
 
 // SetProject sets a project as the active project
-func SetProject(project cfg.Project) {
+func SetProject(project migrate.Project) {
 	global.Project = project
 	App.SetPrompt("dmk [" + global.Directory + "] » " + project.Component.MachineName + " » ")
 }

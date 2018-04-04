@@ -7,7 +7,7 @@ import (
 
 	"fmt"
 
-	"github.com/cjimti/migration-kit/cfg"
+	"github.com/cjimti/migration-kit/migrate"
 	"github.com/desertbit/grumble"
 	"github.com/olekukonko/tablewriter"
 )
@@ -147,7 +147,7 @@ func listProjects() {
 }
 
 // GetProjects returns an array slice of projects.
-func GetProjects() (projects []cfg.Project, err error) {
+func GetProjects() (projects []migrate.Project, err error) {
 	files, err := ioutil.ReadDir(global.Directory)
 	if err != nil {
 		return projects, err

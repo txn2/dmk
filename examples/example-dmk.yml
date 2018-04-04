@@ -126,4 +126,4 @@ migrations:
     destinationquery: |
       INSERT INTO migration_data JSON '{"id": {{.id}}, "name": "{{.name}}"}'
     transformationscript: ""
-tunnels:
+tunnels: {}

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/Masterminds/sprig"
-	"github.com/cjimti/migration-kit/cfg"
 	"github.com/cjimti/migration-kit/driver"
 	"github.com/cjimti/migration-kit/tunnel"
 	"github.com/mcuadros/go-candyjs"
@@ -28,7 +27,7 @@ import (
 // a query against the destination database.
 
 type Runner struct {
-	Project       cfg.Project
+	Project       Project
 	MachineName   string
 	DriverManager *driver.Manager
 	TunnelManager tunnel.Manager

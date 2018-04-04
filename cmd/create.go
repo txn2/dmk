@@ -11,6 +11,7 @@ import (
 	"github.com/AlecAivazis/survey"
 	"github.com/cjimti/migration-kit/cfg"
 	"github.com/cjimti/migration-kit/driver"
+	"github.com/cjimti/migration-kit/migrate"
 	"github.com/desertbit/grumble"
 	"github.com/go-yaml/yaml"
 )
@@ -377,7 +378,7 @@ func createProject() {
 		Description: description,
 	}
 
-	project := cfg.Project{
+	project := migrate.Project{
 		Component: component,
 	}
 
