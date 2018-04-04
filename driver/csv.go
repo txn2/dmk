@@ -43,7 +43,7 @@ func (c *CSV) In(query string) error {
 
 // Out for Driver interface. CSV ignores the query and args, reading
 // the entire file and streaming each record as lines are parsed.
-func (c *CSV) Out(query string, args Args) (<-chan Record, error) {
+func (c *CSV) Out(query string, args ArgSet) (<-chan Record, error) {
 	// call Configure with a driver.Config first
 	if c.config == nil {
 		return nil, errors.New("CSV is not configured")

@@ -92,16 +92,18 @@ func (c *Cassandra) In(query string) error {
 	if err != nil {
 		return err
 	}
+	q.Release()
 
 	return nil
 }
 
 // Out for Driver interface. CSV ignores the query and args, reading
 // the entire file and streaming each record as lines are parsed.
-func (c *Cassandra) Out(query string, args DataMap) (<-chan Record, error) {
+func (c *Cassandra) Out(query string, args ArgSet) (<-chan Record, error) {
 	fmt.Printf("Cassandra executor is not yet functional\n")
 
 	recordChan := make(chan Record, 1)
+	//q := c.session.Query(query)
 
 	// check for args
 

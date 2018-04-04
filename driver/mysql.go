@@ -90,7 +90,7 @@ func (m *MySql) In(query string) error {
 }
 
 // Out for Driver interface.
-func (m *MySql) Out(query string, args DataMap) (<-chan Record, error) {
+func (m *MySql) Out(query string, args ArgSet) (<-chan Record, error) {
 	// call Configure with a driver.Config first
 	if m.db == nil {
 		return nil, errors.New("MySql is not configured")
