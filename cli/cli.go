@@ -68,7 +68,14 @@ func init() {
 
 	Cli.OnInit(func(a *grumble.App, flags grumble.FlagMap) error {
 		// Set the base directory
-		appState.Directory = flags.String("directory")
+		dir, err := prepDirectory(flags.String("directory"))
+		if err != nil {
+			Cli.PrintError(errors.New("directory " + dir + " does not exist"))
+			os.Exit(1)
+		}
+
+		appState.Directory = dir
+
 		Cli.SetPrompt("dmk [" + appState.Directory + "] » ")
 
 		// Get the default project from the command line if specified
@@ -79,6 +86,22 @@ func init() {
 		return nil
 	})
 
+}
+
+// prepDirectory adds a slash if one does not exist and checks the
+// existence of the directory it.
+func prepDirectory(dir string) (d string, err error) {
+
+	// should end in a slash, if not add one
+	if dir[len(dir)-1:] != "/" {
+		dir = dir + "/"
+	}
+
+	if _, err := ioutil.ReadDir(dir); err != nil {
+		return dir, err
+	}
+
+	return dir, nil
 }
 
 // SetProject sets a project as the active project
