@@ -2,7 +2,7 @@ component:
   kind: Project
   name: Example
   machineName: example
-  description: This is a example using the provided examples. See README.md
+  description: This is a example using the provided examples. See README.md.
 databases:
   cassandra_dev:
     component:
@@ -65,7 +65,7 @@ migrations:
       kind: Migration
       name: Example CSV to Cassandra
       machineName: example_csv_to_cassandra
-      description: Load add example data from CSV into cassandra
+      description: Load add example data from CSV into Cassandra.
     sourcedb: example_csv_data
     destinationdb: cassandra_docker_local
     sourcequery: |
@@ -118,7 +118,7 @@ migrations:
       kind: Migration
       name: Example MySql to Cassandra
       machineName: example_mysql_to_cassandra
-      description: Get and add example data from MySql to cassandra
+      description: Get and add example data from MySql to Cassandra.
     sourcedb: mysql_dev
     destinationdb: cassandra_docker_local
     sourcequery: |

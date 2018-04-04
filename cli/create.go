@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"io/ioutil"
 
 	"strconv"
 
@@ -13,7 +12,6 @@ import (
 	"github.com/cjimti/migration-kit/driver"
 	"github.com/cjimti/migration-kit/migrate"
 	"github.com/desertbit/grumble"
-	"github.com/go-yaml/yaml"
 )
 
 func init() {
@@ -388,51 +386,4 @@ func createProject() {
 		fmt.Printf("NOTICE: Project %s was saved.\n", name)
 		SetProject(project)
 	}
-}
-
-func confirmAndSave(machineName string, component interface{}) bool {
-	filename := machineName + "-dmk.yml"
-
-	save := false
-	saveMessage := fmt.Sprintf("Save project file %s?", filename)
-	savePrompt := &survey.Confirm{
-		Message: saveMessage,
-	}
-	survey.AskOne(savePrompt, &save, nil)
-
-	if save == false {
-		fmt.Println()
-		fmt.Printf("NOTICE: %s was not saved.\n", filename)
-		return false
-	}
-
-	if exists := fileExists(filename); exists != false {
-		overMessage := fmt.Sprintf("WARNING: Project File %s exists. Overwrite?", filename)
-		overPrompt := &survey.Confirm{
-			Message: overMessage,
-		}
-
-		survey.AskOne(overPrompt, &save, nil)
-	}
-
-	if save == false {
-		fmt.Println()
-		fmt.Printf("NOTICE: %s was not saved.\n", filename)
-		return false
-	}
-
-	// Marshal to YML and Save
-	d, err := yaml.Marshal(component)
-	if err != nil {
-		fmt.Println(err.Error())
-		return false
-	}
-
-	err = ioutil.WriteFile(appState.Directory+filename, d, 0644)
-	if err != nil {
-		fmt.Println(err.Error())
-		return false
-	}
-
-	return true
 }
