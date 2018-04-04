@@ -84,8 +84,8 @@ func listTunnels() {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Machine Name", "Tunnel", "Local >", "Server >", "Remote"})
 
-	for k := range global.Project.Tunnels {
-		t := global.Project.Tunnels[k]
+	for k := range appState.Project.Tunnels {
+		t := appState.Project.Tunnels[k]
 		table.Append([]string{
 			t.Component.MachineName,
 			fmt.Sprintf("%s: %s", t.Component.Name, t.Component.Description),
@@ -102,8 +102,8 @@ func listMigrations() {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Machine Name", "Description", "Source DB", "Dest DB"})
 
-	for k := range global.Project.Migrations {
-		m := global.Project.Migrations[k]
+	for k := range appState.Project.Migrations {
+		m := appState.Project.Migrations[k]
 		table.Append([]string{
 			m.Component.MachineName,
 			fmt.Sprintf("%s: %s", m.Component.Name, m.Component.Description),
@@ -120,8 +120,8 @@ func listDatabases() {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Machine Name", "Name", "Description", "Tunnel"})
 
-	for k := range global.Project.Databases {
-		db := global.Project.Databases[k]
+	for k := range appState.Project.Databases {
+		db := appState.Project.Databases[k]
 		table.Append([]string{db.Component.MachineName, db.Component.Name, db.Component.Description, db.Tunnel})
 	}
 
@@ -137,7 +137,7 @@ func listProjects() {
 	projects, _ := GetProjects()
 
 	for _, p := range projects {
-		filename := global.Directory + p.Component.MachineName + "-dmk.yml"
+		filename := appState.Directory + p.Component.MachineName + "-dmk.yml"
 		table.Append([]string{p.Component.MachineName, p.Component.Name, filename, p.Component.Description})
 	}
 
@@ -148,7 +148,7 @@ func listProjects() {
 
 // GetProjects returns an array slice of projects.
 func GetProjects() (projects []migrate.Project, err error) {
-	files, err := ioutil.ReadDir(global.Directory)
+	files, err := ioutil.ReadDir(appState.Directory)
 	if err != nil {
 		return projects, err
 	}
@@ -161,7 +161,7 @@ func GetProjects() (projects []migrate.Project, err error) {
 		match, _ := regexp.MatchString("-dmk\\.yml$", filename)
 
 		if match {
-			project, _ := loadProject(global.Directory + filename)
+			project, _ := loadProject(appState.Directory + filename)
 			projects = append(projects, project)
 		}
 	}

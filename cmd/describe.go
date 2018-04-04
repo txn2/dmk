@@ -16,8 +16,8 @@ func init() {
 		Help:    "describe components such as projects, databases, queries, transformations and migrations",
 		Aliases: []string{"desc"},
 		Run: func(c *grumble.Context) error {
-			if global.Project.Component.MachineName != "" {
-				describeProject(global.Project.Component.MachineName)
+			if appState.Project.Component.MachineName != "" {
+				describeProject(appState.Project.Component.MachineName)
 				return nil
 			}
 			fmt.Println("No active project or project specified.")
@@ -89,18 +89,18 @@ func init() {
 }
 
 func describeMigration(machineName string) {
-	if m, ok := global.Project.Migrations[machineName]; ok {
+	if m, ok := appState.Project.Migrations[machineName]; ok {
 		describeComponent(m.Component)
 
 		fmt.Printf("Source:\n")
-		if sourceDb, ok := global.Project.Databases[m.SourceDb]; ok {
+		if sourceDb, ok := appState.Project.Databases[m.SourceDb]; ok {
 			fmt.Printf("\tDatabase:\n")
 			fmt.Printf("\t - %s [%s]\n", sourceDb.Component.Name, m.SourceDb)
 		}
 
 		fmt.Println()
 		fmt.Printf("Destination:\n")
-		if destDb, ok := global.Project.Databases[m.DestinationDb]; ok {
+		if destDb, ok := appState.Project.Databases[m.DestinationDb]; ok {
 			fmt.Printf("\tDatabase:\n")
 			fmt.Printf("\t - %s [%s]\n", destDb.Component.Name, m.DestinationDb)
 		}
@@ -114,7 +114,7 @@ func describeMigration(machineName string) {
 }
 
 func describeDatabase(machineName string) {
-	if db, ok := global.Project.Databases[machineName]; ok {
+	if db, ok := appState.Project.Databases[machineName]; ok {
 		describeComponent(db.Component)
 		// @TODO add details
 		return
@@ -125,7 +125,7 @@ func describeDatabase(machineName string) {
 }
 
 func describeProject(machineName string) {
-	p, err := loadProject(global.Directory + machineName + "-dmk.yml")
+	p, err := loadProject(appState.Directory + machineName + "-dmk.yml")
 	if err != nil {
 		App.PrintError(err)
 		return

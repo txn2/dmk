@@ -33,7 +33,7 @@ func init() {
 
 				tunnels := make([]string, 0)
 
-				for k := range global.Project.Tunnels {
+				for k := range appState.Project.Tunnels {
 					tunnels = append(tunnels, k)
 				}
 
@@ -66,7 +66,7 @@ func init() {
 
 				dbs := make([]string, 0)
 
-				for k := range global.Project.Databases {
+				for k := range appState.Project.Databases {
 					dbs = append(dbs, k)
 				}
 
@@ -87,10 +87,10 @@ func init() {
 }
 
 func deleteTunnel(machineName string) {
-	if _, ok := global.Project.Tunnels[machineName]; ok {
+	if _, ok := appState.Project.Tunnels[machineName]; ok {
 		fmt.Printf("Removing tunnel %s.\n", machineName)
-		delete(global.Project.Tunnels, machineName)
-		saved := confirmAndSave(global.Project.Component.MachineName, global.Project)
+		delete(appState.Project.Tunnels, machineName)
+		saved := confirmAndSave(appState.Project.Component.MachineName, appState.Project)
 		if saved {
 			fmt.Println()
 			fmt.Printf("NOTICE: Project saved less tunnel %s.\n", machineName)
@@ -102,10 +102,10 @@ func deleteTunnel(machineName string) {
 }
 
 func deleteDatabase(machineName string) {
-	if _, ok := global.Project.Databases[machineName]; ok {
+	if _, ok := appState.Project.Databases[machineName]; ok {
 		fmt.Printf("Removing database %s.\n", machineName)
-		delete(global.Project.Databases, machineName)
-		saved := confirmAndSave(global.Project.Component.MachineName, global.Project)
+		delete(appState.Project.Databases, machineName)
+		saved := confirmAndSave(appState.Project.Component.MachineName, appState.Project)
 		if saved {
 			fmt.Println()
 			fmt.Printf("NOTICE: Project saved less database %s.\n", machineName)

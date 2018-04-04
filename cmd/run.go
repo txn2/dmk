@@ -40,7 +40,7 @@ func init() {
 func runMigration(machineName string, f grumble.FlagMap) {
 
 	runner := &migrate.Runner{
-		Project:       global.Project,
+		Project:       appState.Project,
 		MachineName:   machineName,
 		DriverManager: DriverManager,
 		TunnelManager: TunnelManager,

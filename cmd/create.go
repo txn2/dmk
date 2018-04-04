@@ -137,12 +137,12 @@ func createTunnel() {
 		},
 	}
 
-	if global.Project.Tunnels == nil {
-		global.Project.Tunnels = map[string]cfg.Tunnel{}
+	if appState.Project.Tunnels == nil {
+		appState.Project.Tunnels = map[string]cfg.Tunnel{}
 	}
 
-	global.Project.Tunnels[machineName] = tunnelCfg
-	saved := confirmAndSave(global.Project.Component.MachineName, global.Project)
+	appState.Project.Tunnels[machineName] = tunnelCfg
+	saved := confirmAndSave(appState.Project.Component.MachineName, appState.Project)
 	if saved {
 		fmt.Println()
 		fmt.Printf("NOTICE: Tunnel %s was saved.\n", name)
@@ -223,7 +223,7 @@ func createDatabase(database cfg.Database) {
 		// get tunnel list
 		tunnels := make([]string, 0)
 
-		for k := range global.Project.Tunnels {
+		for k := range appState.Project.Tunnels {
 			tunnels = append(tunnels, k)
 		}
 
@@ -257,12 +257,12 @@ func createDatabase(database cfg.Database) {
 	// configuration survey
 	dbDriver.ConfigSurvey(database.Configuration)
 
-	if global.Project.Databases == nil {
-		global.Project.Databases = map[string]cfg.Database{}
+	if appState.Project.Databases == nil {
+		appState.Project.Databases = map[string]cfg.Database{}
 	}
 
-	global.Project.Databases[machineName] = database
-	saved := confirmAndSave(global.Project.Component.MachineName, global.Project)
+	appState.Project.Databases[machineName] = database
+	saved := confirmAndSave(appState.Project.Component.MachineName, appState.Project)
 	if saved {
 		fmt.Println()
 		fmt.Printf("NOTICE: Database %s was saved.\n", name)
@@ -300,7 +300,7 @@ func createMigration() {
 
 	dbs := make([]string, 0)
 
-	for k := range global.Project.Databases {
+	for k := range appState.Project.Databases {
 		dbs = append(dbs, k)
 	}
 
@@ -343,12 +343,12 @@ func createMigration() {
 	}
 	survey.AskOne(dqPrompt, &migration.DestinationQuery, nil)
 
-	if global.Project.Migrations == nil {
-		global.Project.Migrations = map[string]cfg.Migration{}
+	if appState.Project.Migrations == nil {
+		appState.Project.Migrations = map[string]cfg.Migration{}
 	}
 
-	global.Project.Migrations[machineName] = migration
-	saved := confirmAndSave(global.Project.Component.MachineName, global.Project)
+	appState.Project.Migrations[machineName] = migration
+	saved := confirmAndSave(appState.Project.Component.MachineName, appState.Project)
 	if saved {
 		fmt.Println()
 		fmt.Printf("NOTICE: Migration %s was saved.\n", name)
@@ -428,7 +428,7 @@ func confirmAndSave(machineName string, component interface{}) bool {
 		return false
 	}
 
-	err = ioutil.WriteFile(global.Directory+filename, d, 0644)
+	err = ioutil.WriteFile(appState.Directory+filename, d, 0644)
 	if err != nil {
 		fmt.Println(err.Error())
 		return false

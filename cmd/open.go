@@ -34,7 +34,7 @@ func init() {
 }
 
 func openProject(machineName string) {
-	project, err := loadProject(global.Directory + machineName + "-dmk.yml")
+	project, err := loadProject(appState.Directory + machineName + "-dmk.yml")
 	if err != nil {
 		App.PrintError(err)
 		return

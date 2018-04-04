@@ -21,7 +21,7 @@ import (
 	"github.com/go-yaml/yaml"
 )
 
-var global struct {
+var appState struct {
 	Project   migrate.Project
 	Directory string // base directory for commandline interaction with projects
 	Env       map[string]string
@@ -51,7 +51,7 @@ var TunnelManager = tunnel.Manager{}
 
 // init the cmd package
 func init() {
-	global.Env = make(map[string]string, 0)
+	appState.Env = make(map[string]string, 0)
 
 	App.SetPrintASCIILogo(func(a *grumble.App) {
 		fmt.Println(` Data Migration Kit`)
@@ -69,8 +69,8 @@ func init() {
 
 	App.OnInit(func(a *grumble.App, flags grumble.FlagMap) error {
 		// Set the base directory
-		global.Directory = flags.String("directory")
-		App.SetPrompt("dmk [" + global.Directory + "] » ")
+		appState.Directory = flags.String("directory")
+		App.SetPrompt("dmk [" + appState.Directory + "] » ")
 
 		// Get the default project from the command line if specified
 		project := flags.String("project")
@@ -101,14 +101,14 @@ func loadProject(filename string) (project migrate.Project, err error) {
 
 // SetProject sets a project as the active project
 func SetProject(project migrate.Project) {
-	global.Project = project
-	App.SetPrompt("dmk [" + global.Directory + "] » " + project.Component.MachineName + " » ")
+	appState.Project = project
+	App.SetPrompt("dmk [" + appState.Directory + "] » " + project.Component.MachineName + " » ")
 }
 
 // activeProjectCheck is a simple check to see if we have a current
 // active project.
 func activeProjectCheck() (ok bool) {
-	if global.Project.Component.MachineName == "" {
+	if appState.Project.Component.MachineName == "" {
 		App.PrintError(errors.New("no active project"))
 		fmt.Println("Try \"ls p\" for a list of projects.")
 		return false

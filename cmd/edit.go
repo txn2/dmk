@@ -33,7 +33,7 @@ func init() {
 
 				dbs := make([]string, 0)
 
-				for k := range global.Project.Databases {
+				for k := range appState.Project.Databases {
 					dbs = append(dbs, k)
 				}
 
@@ -56,7 +56,7 @@ func init() {
 func editDatabase(machineName string) {
 	fmt.Printf("Edit database %s\n", machineName)
 
-	if database, ok := global.Project.Databases[machineName]; ok {
+	if database, ok := appState.Project.Databases[machineName]; ok {
 		createDatabase(database)
 		return
 	}
