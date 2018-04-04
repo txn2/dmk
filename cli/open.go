@@ -1,8 +1,9 @@
-package cmd
+package cli
 
 import (
 	"fmt"
 
+	"github.com/cjimti/migration-kit/migrate"
 	"github.com/desertbit/grumble"
 )
 
@@ -33,8 +34,9 @@ func init() {
 
 }
 
+// openProject by machine name
 func openProject(machineName string) {
-	project, err := loadProject(appState.Directory + machineName + "-dmk.yml")
+	project, err := migrate.LoadProject(appState.Directory + machineName + "-dmk.yml")
 	if err != nil {
 		App.PrintError(err)
 		return

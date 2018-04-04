@@ -1,4 +1,4 @@
-package cmd
+package cli
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/cjimti/migration-kit/cfg"
+	"github.com/cjimti/migration-kit/migrate"
 	"github.com/desertbit/grumble"
 	"github.com/olekukonko/tablewriter"
 )
@@ -125,7 +126,7 @@ func describeDatabase(machineName string) {
 }
 
 func describeProject(machineName string) {
-	p, err := loadProject(appState.Directory + machineName + "-dmk.yml")
+	p, err := migrate.LoadProject(appState.Directory + machineName + "-dmk.yml")
 	if err != nil {
 		App.PrintError(err)
 		return

@@ -1,4 +1,4 @@
-package cmd
+package cli
 
 import (
 	"fmt"
@@ -8,8 +8,6 @@ import (
 	"regexp"
 	"strings"
 
-	"io/ioutil"
-
 	"errors"
 
 	"github.com/AlecAivazis/survey"
@@ -18,7 +16,6 @@ import (
 	"github.com/cjimti/migration-kit/tunnel"
 	"github.com/desertbit/grumble"
 	"github.com/fatih/color"
-	"github.com/go-yaml/yaml"
 )
 
 var appState struct {
@@ -80,23 +77,6 @@ func init() {
 		return nil
 	})
 
-}
-
-// loadProject loads a project from yaml data
-func loadProject(filename string) (project migrate.Project, err error) {
-	ymlData, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return project, err
-	}
-
-	project = migrate.Project{}
-
-	err = yaml.Unmarshal([]byte(ymlData), &project)
-	if err != nil {
-		return project, err
-	}
-
-	return project, nil
 }
 
 // SetProject sets a project as the active project

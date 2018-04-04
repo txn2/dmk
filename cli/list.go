@@ -1,4 +1,4 @@
-package cmd
+package cli
 
 import (
 	"io/ioutil"
@@ -161,7 +161,7 @@ func GetProjects() (projects []migrate.Project, err error) {
 		match, _ := regexp.MatchString("-dmk\\.yml$", filename)
 
 		if match {
-			project, _ := loadProject(appState.Directory + filename)
+			project, _ := migrate.LoadProject(appState.Directory + filename)
 			projects = append(projects, project)
 		}
 	}
