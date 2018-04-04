@@ -16,7 +16,7 @@ func init() {
 		Aliases: []string{"rm"},
 	}
 
-	App.AddCommand(editCmd)
+	Cli.AddCommand(editCmd)
 
 	editCmd.AddCommand(&grumble.Command{
 		Name:      "tunnel",
@@ -98,7 +98,7 @@ func deleteTunnel(machineName string) {
 		return
 	}
 
-	App.PrintError(errors.New("no tunnel found for " + machineName))
+	Cli.PrintError(errors.New("no tunnel found for " + machineName))
 }
 
 func deleteDatabase(machineName string) {
@@ -113,5 +113,5 @@ func deleteDatabase(machineName string) {
 		return
 	}
 
-	App.PrintError(errors.New("no database found for " + machineName))
+	Cli.PrintError(errors.New("no database found for " + machineName))
 }

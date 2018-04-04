@@ -6,5 +6,5 @@ import (
 )
 
 func main() {
-	grumble.Main(cli.App)
+	grumble.Main(cli.Cli)
 }

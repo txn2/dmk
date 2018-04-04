@@ -23,7 +23,7 @@ func init() {
 		Aliases: []string{"add"},
 	}
 
-	App.AddCommand(createCmd)
+	Cli.AddCommand(createCmd)
 
 	createCmd.AddCommand(&grumble.Command{
 		Name:    "project",
@@ -102,14 +102,14 @@ func createTunnel() {
 	randPort := strconv.Itoa(3000 + rand.Intn(3000))
 	localEp, err := createEndpoint("Local", "localhost", randPort)
 	if err != nil {
-		App.PrintError(err)
+		Cli.PrintError(err)
 		return
 	}
 
 	fmt.Printf("Configure server endpoint (tunnel to):\n")
 	serverEp, err := createEndpoint("Server", "", "22")
 	if err != nil {
-		App.PrintError(err)
+		Cli.PrintError(err)
 		return
 	}
 
@@ -123,7 +123,7 @@ func createTunnel() {
 	fmt.Printf("Configure remote endpoint (destination):\n")
 	remoteEp, err := createEndpoint("Remote", "localhost", "3306")
 	if err != nil {
-		App.PrintError(err)
+		Cli.PrintError(err)
 		return
 	}
 
@@ -247,7 +247,7 @@ func createDatabase(database cfg.Database) {
 	// configure the driver
 	dbDriver, err := DriverManager.GetNewDriver(database.Driver)
 	if err != nil {
-		App.PrintError(err)
+		Cli.PrintError(err)
 	}
 
 	if database.Configuration == nil {

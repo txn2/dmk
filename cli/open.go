@@ -14,7 +14,7 @@ func init() {
 		Aliases: []string{"o"},
 	}
 
-	App.AddCommand(listCmd)
+	Cli.AddCommand(listCmd)
 
 	listCmd.AddCommand(&grumble.Command{
 		Name:      "project",
@@ -38,7 +38,7 @@ func init() {
 func openProject(machineName string) {
 	project, err := migrate.LoadProject(appState.Directory + machineName + "-dmk.yml")
 	if err != nil {
-		App.PrintError(err)
+		Cli.PrintError(err)
 		return
 	}
 

@@ -24,9 +24,9 @@ var appState struct {
 	Env       map[string]string
 }
 
-// App is the DMK CLI
+// Cli is the DMK CLI
 // see http://github.com/desertbit/grumble
-var App = grumble.New(&grumble.Config{
+var Cli = grumble.New(&grumble.Config{
 	Name:                  "DMK",
 	Description:           "Data migration kit.",
 	HistoryFile:           "/tmp/dmk.hist",
@@ -50,7 +50,7 @@ var TunnelManager = tunnel.Manager{}
 func init() {
 	appState.Env = make(map[string]string, 0)
 
-	App.SetPrintASCIILogo(func(a *grumble.App) {
+	Cli.SetPrintASCIILogo(func(a *grumble.App) {
 		fmt.Println(` Data Migration Kit`)
 		fmt.Println(`  ___  _____ _____ `)
 		fmt.Println(` |   \|     |  |  |`)
@@ -64,10 +64,10 @@ func init() {
 		fmt.Println()
 	})
 
-	App.OnInit(func(a *grumble.App, flags grumble.FlagMap) error {
+	Cli.OnInit(func(a *grumble.App, flags grumble.FlagMap) error {
 		// Set the base directory
 		appState.Directory = flags.String("directory")
-		App.SetPrompt("dmk [" + appState.Directory + "] » ")
+		Cli.SetPrompt("dmk [" + appState.Directory + "] » ")
 
 		// Get the default project from the command line if specified
 		project := flags.String("project")
@@ -82,14 +82,14 @@ func init() {
 // SetProject sets a project as the active project
 func SetProject(project migrate.Project) {
 	appState.Project = project
-	App.SetPrompt("dmk [" + appState.Directory + "] » " + project.Component.MachineName + " » ")
+	Cli.SetPrompt("dmk [" + appState.Directory + "] » " + project.Component.MachineName + " » ")
 }
 
 // activeProjectCheck is a simple check to see if we have a current
 // active project.
 func activeProjectCheck() (ok bool) {
 	if appState.Project.Component.MachineName == "" {
-		App.PrintError(errors.New("no active project"))
+		Cli.PrintError(errors.New("no active project"))
 		fmt.Println("Try \"ls p\" for a list of projects.")
 		return false
 	}

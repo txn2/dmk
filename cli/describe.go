@@ -27,7 +27,7 @@ func init() {
 		},
 	}
 
-	App.AddCommand(listCmd)
+	Cli.AddCommand(listCmd)
 
 	listCmd.AddCommand(&grumble.Command{
 		Name:      "project",
@@ -128,7 +128,7 @@ func describeDatabase(machineName string) {
 func describeProject(machineName string) {
 	p, err := migrate.LoadProject(appState.Directory + machineName + "-dmk.yml")
 	if err != nil {
-		App.PrintError(err)
+		Cli.PrintError(err)
 		return
 	}
 

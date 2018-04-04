@@ -19,7 +19,7 @@ func init() {
 		Aliases: []string{"ls"},
 	}
 
-	App.AddCommand(listCmd)
+	Cli.AddCommand(listCmd)
 
 	listCmd.AddCommand(&grumble.Command{
 		Name:    "projects",

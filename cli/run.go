@@ -33,7 +33,7 @@ func init() {
 		},
 	}
 
-	App.AddCommand(runCmd)
+	Cli.AddCommand(runCmd)
 
 }
 
@@ -49,7 +49,7 @@ func runMigration(machineName string, f grumble.FlagMap) {
 
 	err := runner.Run()
 	if err != nil {
-		App.PrintError(err)
+		Cli.PrintError(err)
 	}
 
 }

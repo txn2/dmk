@@ -16,7 +16,7 @@ func init() {
 		Aliases: []string{"e"},
 	}
 
-	App.AddCommand(editCmd)
+	Cli.AddCommand(editCmd)
 
 	editCmd.AddCommand(&grumble.Command{
 		Name:      "database",
@@ -61,5 +61,5 @@ func editDatabase(machineName string) {
 		return
 	}
 
-	App.PrintError(errors.New("can't find database: " + machineName))
+	Cli.PrintError(errors.New("can't find database: " + machineName))
 }
