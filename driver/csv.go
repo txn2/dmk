@@ -16,6 +16,17 @@ type CSV struct {
 	config Config
 }
 
+// HasSourceQuery is false for CSV
+func (c *CSV) HasSourceQuery() bool {
+	return false
+}
+
+// HasCountQuery is false for CSV
+// TODO: implement counter
+func (c *CSV) HasCountQuery() bool {
+	return false
+}
+
 // Configure (keys determined in ConfigSurvey)
 func (c *CSV) Configure(config Config) error {
 
@@ -36,20 +47,21 @@ func (c *CSV) Done() error {
 }
 
 // In for Driver interface. @TODO implementation
-func (c *CSV) In(query string) error {
+func (c *CSV) In(query string, args []string) error {
 	fmt.Printf("CSV In is not yet implemented.\n")
 	return nil
 }
 
 // ExpectedOut returns true and the number of expected outbound records,
 // false value mean indefinite.
+// TODO: Implement expected out for CSV
 func (c *CSV) ExpectedOut() (bool, int, error) {
 	return false, 0, nil
 }
 
 // Out for Driver interface. CSV ignores the query and args, reading
 // the entire file and streaming each record as lines are parsed.
-func (c *CSV) Out(query string, args ArgSet) (<-chan Record, error) {
+func (c *CSV) Out(query string, args []string) (<-chan Record, error) {
 	// call Configure with a driver.Config first
 	if c.config == nil {
 		return nil, errors.New("CSV is not configured")

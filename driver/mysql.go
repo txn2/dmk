@@ -15,6 +15,16 @@ type MySql struct {
 	db     *sql.DB
 }
 
+// HasSourceQuery is true for MySql
+func (m *MySql) HasSourceQuery() bool {
+	return true
+}
+
+// HasCountQuery is true for MySql
+func (m *MySql) HasCountQuery() bool {
+	return true
+}
+
 // Configure (keys determined in ConfigSurvey)
 func (m *MySql) Configure(config Config) error {
 	fmt.Printf("Configuring a MySQL driver.\n")
@@ -84,19 +94,20 @@ func (m *MySql) Done() error {
 }
 
 // In for Driver interface. @TODO implementation
-func (m *MySql) In(query string) error {
+func (m *MySql) In(query string, args []string) error {
 	fmt.Printf("MySql In is not yet implemented.\n")
 	return nil
 }
 
 // ExpectedOut returns true and the number of expected outbound records,
 // false value mean indefinite.
+// TODO: implement expected out for MySQL
 func (m *MySql) ExpectedOut() (bool, int, error) {
 	return false, 0, nil
 }
 
 // Out for Driver interface.
-func (m *MySql) Out(query string, args ArgSet) (<-chan Record, error) {
+func (m *MySql) Out(query string, args []string) (<-chan Record, error) {
 	// call Configure with a driver.Config first
 	if m.db == nil {
 		return nil, errors.New("MySql is not configured")

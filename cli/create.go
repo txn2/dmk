@@ -7,6 +7,10 @@ import (
 
 	"math/rand"
 
+	"strings"
+
+	"errors"
+
 	"github.com/AlecAivazis/survey"
 	"github.com/cjimti/migration-kit/cfg"
 	"github.com/cjimti/migration-kit/driver"
@@ -296,27 +300,69 @@ func createMigration() {
 		Component: component,
 	}
 
-	dbs := make([]string, 0)
+	dbChooser(PromptCfg{
+		Message: "Choose a SOURCE Database",
+		Value:   &migration.SourceDb,
+	})
 
-	for k := range appState.Project.Databases {
-		dbs = append(dbs, k)
+	sourceDbDriverType := appState.Project.Databases[migration.SourceDb].Driver
+	sourceDbDriver, err := DriverManager.GetNewDriver(sourceDbDriverType)
+	if err != nil {
+		Cli.PrintError(err)
+		return
 	}
 
-	sourceDbPrompt := &survey.Select{
-		Message: "Choose a SOURCE Database:",
-		Options: dbs,
-	}
-	survey.AskOne(sourceDbPrompt, &migration.SourceDb, nil)
+	foundReplacements := 0
 
-	sourceQueryPrompt := &survey.Editor{
-		Message: "SOURCE Query:",
-		Help:    "Ex: `SELECT id,username FROM users`",
+	// does the selected driver use a source query?
+	if sourceDbDriver.HasSourceQuery() {
+
+		sourceQueryPrompt := &survey.Editor{
+			Message: "SOURCE Query:",
+			Help:    "Example: `SELECT id, username FROM users WHERE active = ?`",
+			// todo: get query examples help from driver
+		}
+		survey.AskOne(sourceQueryPrompt, &migration.SourceQuery, nil)
+
+		foundReplacements = strings.Count(migration.SourceQuery, "?")
+
+		if foundReplacements > 0 {
+			fmt.Printf(">>> Found %[1]d '?' characters. Assuming query requires %[1]d args. <<<\n", foundReplacements)
+		}
+		fmt.Printf("Source Query:\n\t%s\n", migration.SourceQuery)
+
+		nArgsStr := ""
+		prompt = &survey.Input{
+			Message: "Number of Required Arguments (0 for none):",
+			Help:    "Ex: `The number of ordered arguments to pass to the query.`",
+			Default: fmt.Sprintf("%d", foundReplacements),
+		}
+		survey.AskOne(prompt, &nArgsStr, func(ans interface{}) error {
+			nArgs, err := strconv.Atoi(ans.(string))
+			if err != nil {
+				return errors.New("value must be an integer")
+			}
+
+			migration.SourceQueryNArgs = nArgs
+			return nil
+		})
+
 	}
-	survey.AskOne(sourceQueryPrompt, &migration.SourceQuery, nil)
+
+	// does the selected driver use a count query?
+	if sourceDbDriver.HasCountQuery() {
+		sourceQueryCountPrompt := &survey.Editor{
+			Message: "SOURCE Count Query:",
+			Help:    "Example: `SELECT count(1) as total FROM users WHERE active = ?`",
+			// todo: get query examples help from driver, every driver may
+		}
+		survey.AskOne(sourceQueryCountPrompt, &migration.SourceCountQuery, nil)
+	}
 
 	script := false
 	promptBool := &survey.Confirm{
-		Message: "Does this data require a script for transformation?",
+		Message: "Does the source data require a script for transformation?",
+		Help:    "Use javascript to mutate each record before sending.",
 	}
 	survey.AskOne(promptBool, &script, nil)
 
@@ -328,16 +374,22 @@ func createMigration() {
 		survey.AskOne(scriptPrompt, &migration.TransformationScript, nil)
 	}
 
-	destDbPrompt := &survey.Select{
-		Message: "Choose a DESTINATION Database:",
-		Options: dbs,
-	}
-	survey.AskOne(destDbPrompt, &migration.DestinationDb, nil)
+	dbChooser(PromptCfg{
+		Message: "Choose a DESTINATION Database",
+		Value:   &migration.DestinationDb,
+	})
 
 	dqPrompt := &survey.Editor{
 		Message: "DESTINATION Query:",
-		Help: `Ex: INSERT INTO table_name JSON '{"id": "{{.id"}}", "username": "{{.username"}}"}` +
-			"\nsee: https://golang.org/pkg/text/template/",
+		Help: "The destination query is run through a template processor." +
+			"\nTemplate directives are for queries that use the source record as" +
+			"\nexplicit values in the query. This may be used in combination " +
+			"\nwith argument replacement.\n" +
+			`Example: INSERT INTO table_name JSON '{"id": "{{.id"}}", "username": "{{.username"}}"}` +
+			"\n" + `Example: UPDATE example.table SET a = ?, b = ? WHERE = ""{{.something}}"` +
+			"\nsee: https://golang.org/pkg/text/template/" +
+			"\nsee: https://godoc.org/github.com/Masterminds/sprig",
+		// todo: get examples from driver
 	}
 	survey.AskOne(dqPrompt, &migration.DestinationQuery, nil)
 

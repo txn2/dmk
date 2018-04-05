@@ -153,6 +153,29 @@ func fileExists(file string) bool {
 	return false
 }
 
+type PromptCfg struct {
+	Value   *string
+	Message string
+	Help    string
+	Default string
+}
+
+func dbChooser(pcfg PromptCfg) {
+	dbs := make([]string, 0)
+
+	for k := range appState.Project.Databases {
+		dbs = append(dbs, k)
+	}
+
+	sourceDbPrompt := &survey.Select{
+		Message: pcfg.Message + ":",
+		Help:    pcfg.Help,
+		Default: pcfg.Default,
+		Options: dbs,
+	}
+	survey.AskOne(sourceDbPrompt, pcfg.Value, nil)
+}
+
 // confirmAndSave prompts a user before a save.
 func confirmAndSave(machineName string, component interface{}) bool {
 	filename := machineName + "-dmk.yml"

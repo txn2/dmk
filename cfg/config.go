@@ -23,12 +23,15 @@ type Database struct {
 // Migration defines a source and destination database,
 // query and transformation script
 type Migration struct {
-	Component            Component
-	SourceDb             string // db machine name
-	DestinationDb        string // db machine name
-	SourceQuery          string // how to get the data
-	DestinationQuery     string // how to insert the data
-	TransformationScript string // js script for specialized data processing
+	Component             Component
+	SourceDb              string // db machine name
+	DestinationDb         string // db machine name
+	SourceQuery           string // how to get the data
+	SourceQueryNArgs      int    // number of argument the source query takes
+	SourceCountQuery      string // for drivers that can count
+	DestinationQuery      string // how to insert the data
+	DestinationQueryNArgs int    // number of arguments the destination query takes
+	TransformationScript  string // js script for specialized data processing
 }
 
 // TunnelAuth defines tunnel authentication method

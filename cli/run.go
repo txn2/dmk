@@ -20,8 +20,8 @@ func init() {
 		Run: func(c *grumble.Context) error {
 			if ok := activeProjectCheck(); ok {
 
-				if len(c.Args) == 1 {
-					runMigration(c.Args[0], c.Flags)
+				if len(c.Args) > 0 {
+					runMigration(c.Args[0], c.Flags, c.Args[1:])
 					return nil
 				}
 				fmt.Printf("Try: %s\n", c.Command.Usage)
@@ -37,7 +37,7 @@ func init() {
 
 }
 
-func runMigration(machineName string, f grumble.FlagMap) {
+func runMigration(machineName string, f grumble.FlagMap, args []string) {
 
 	runner := &migrate.Runner{
 		Project:       appState.Project,
@@ -45,6 +45,7 @@ func runMigration(machineName string, f grumble.FlagMap) {
 		DriverManager: DriverManager,
 		TunnelManager: TunnelManager,
 		DryRun:        f.Bool("dry-run"),
+		SourceArgs:    args,
 	}
 
 	err := runner.Run()

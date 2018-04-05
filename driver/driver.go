@@ -5,8 +5,6 @@ import "errors"
 // Config is a map or configuration data specific to a specialized Driver
 type Config map[string]interface{}
 
-type ArgSet []interface{}
-
 // Record is a map of a single database record
 //
 type Record map[string]interface{}
@@ -44,12 +42,17 @@ type DataMap interface {
 
 // Driver managed configuration and of a database and executes queries against it.
 type Driver interface {
-	Configure(config Config) error                        // Takes a config map
-	ConfigSurvey(config Config) error                     // Interactive config generator
-	Out(query string, args ArgSet) (<-chan Record, error) // outbound data
-	In(query string) error                                // inbound data
-	Done() error                                          // finalization tasks when user is done with Driver
-	ExpectedOut() (bool, int, error)                      // a false return means indefinite
+	Configure(config Config) error                          // Takes a config map
+	ConfigSurvey(config Config) error                       // Interactive config generator
+	Out(query string, args []string) (<-chan Record, error) // outbound data
+	In(query string, args []string) error                   // inbound data
+	Done() error                                            // finalization tasks when user is done with Driver
+	// ExpectedOut is the number of records we expect
+	// from the source, some drivers can determine
+	// expected output without a source query
+	ExpectedOut() (bool, int, error) // a false return means indefinite
+	HasSourceQuery() bool            // does this driver use a query to get data
+	HasCountQuery() bool             // does this driver have a count query
 }
 
 // Manager handles the collection of drivers

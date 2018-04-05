@@ -29,6 +29,16 @@ type Cassandra struct {
 	config  Config
 }
 
+// HasSourceQuery is true for Cassandra
+func (c *Cassandra) HasSourceQuery() bool {
+	return true
+}
+
+// HasCountQuery is true for Cassandra
+func (c *Cassandra) HasCountQuery() bool {
+	return true
+}
+
 // Configure (keys determined in ConfigSurvey)
 func (c *Cassandra) Configure(config Config) error {
 	// @TODO improve validation
@@ -40,6 +50,10 @@ func (c *Cassandra) Configure(config Config) error {
 	// Create a database session
 	// see https://github.com/scylladb/gocqlx
 	cluster := gocql.NewCluster(nodes...)
+	cluster.PoolConfig.HostSelectionPolicy = gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy())
+	cluster.Compressor = &gocql.SnappyCompressor{}
+	cluster.RetryPolicy = &gocql.ExponentialBackoffRetryPolicy{NumRetries: 3}
+	cluster.Consistency = gocql.LocalQuorum
 
 	if credentialsInt, ok := config["credentials"].(map[interface{}]interface{}); ok {
 		// create u/p slice
@@ -55,10 +69,9 @@ func (c *Cassandra) Configure(config Config) error {
 	}
 
 	cluster.Keyspace = config["keyspace"].(string)
-	cluster.NumConns = 1
 
-	// @TODO implement consistency lookup (for not default to Quorum)
-	cluster.Consistency = gocql.One
+	// @TODO implement number of connections in survey
+	cluster.NumConns = 1
 	session, err := cluster.CreateSession()
 	if err != nil {
 		panic(err)
@@ -75,7 +88,12 @@ func (c *Cassandra) Done() error {
 }
 
 // In for Driver interface. @TODO implementation
-func (c *Cassandra) In(query string) error {
+func (c *Cassandra) In(query string, args []string) error {
+
+	casArgs := make([]interface{}, len(args))
+	for i, v := range args {
+		casArgs[i] = v
+	}
 
 	if c.session == nil {
 		return errors.New("the Cassandra driver is not configured")
@@ -89,7 +107,7 @@ func (c *Cassandra) In(query string) error {
 	// execute the query
 	// see https://gocql.github.io/
 	// see https://godoc.org/github.com/gocql/gocql
-	q := c.session.Query(query)
+	q := c.session.Query(query, casArgs...)
 	err := q.Exec()
 	if err != nil {
 		return err
@@ -105,25 +123,40 @@ func (c *Cassandra) ExpectedOut() (bool, int, error) {
 	return false, 0, nil
 }
 
-// Out for Driver interface. CSV ignores the query and args, reading
-// the entire file and streaming each record as lines are parsed.
-func (c *Cassandra) Out(query string, args ArgSet) (<-chan Record, error) {
+// Out for Driver interface. Data coming out of Cassandra
+func (c *Cassandra) Out(query string, args []string) (<-chan Record, error) {
 	fmt.Printf("Cassandra executor is not yet functional\n")
 
+	casArgs := make([]interface{}, len(args))
+	for i, v := range args {
+		casArgs[i] = v
+	}
+
+	///casArgs := make([]interface{...args})
+
 	recordChan := make(chan Record, 1)
-	itr := c.session.Query(query, args).Consistency(gocql.One).Iter()
+	q := c.session.Query(query, casArgs...).Consistency(gocql.Quorum)
+	fmt.Printf("Out Query: %s\n", q.String())
+
+	itr := q.Iter()
 
 	// check for args
 	go func() {
 		defer itr.Close()
-		row := make(map[string]interface{})
-		for itr.MapScan(row) {
+		defer close(recordChan)
+
+		for {
+			// New map each iteration
+			row := make(map[string]interface{})
+			if !itr.MapScan(row) {
+				break
+			}
 			recordChan <- row
 		}
-
 		if err := itr.Close(); err != nil {
 			log.Fatal(err)
 		}
+
 	}()
 
 	return recordChan, nil

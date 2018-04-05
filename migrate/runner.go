@@ -29,11 +29,14 @@ import (
 type Runner struct {
 	Project       Project
 	MachineName   string
+	SourceArgs    []string
 	DriverManager *driver.Manager
 	TunnelManager tunnel.Manager
 	DryRun        bool
+	Verbose       bool
 }
 
+// Run runs a migration
 func (r *Runner) Run() error {
 
 	fmt.Println("Running Migration: " + r.MachineName)
@@ -80,7 +83,18 @@ func (r *Runner) Run() error {
 		return err
 	}
 
-	sourceRecordChan, err := sourceDriver.Out(migration.SourceQuery, driver.ArgSet{})
+	fmt.Printf("Source expects %d args.\n", migration.SourceQueryNArgs)
+	fmt.Printf("Received %d args.\n", len(r.SourceArgs))
+
+	if migration.SourceQueryNArgs != len(r.SourceArgs) {
+		return errors.New(fmt.Sprintf("expecting %d args and got %d", migration.SourceQueryNArgs, len(r.SourceArgs)))
+	}
+
+	// Source data collection.
+	//
+	//
+	// do we have the requested number of args
+	sourceRecordChan, err := sourceDriver.Out(migration.SourceQuery, r.SourceArgs)
 	if err != nil {
 		return err
 	}
@@ -117,9 +131,11 @@ func (r *Runner) Run() error {
 
 	fmt.Printf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)
 
-	// TODO Write aggregator that collects all records and sends thme once to the query
 	// iterate over the sourceRecordChan for driver.Record objects
 	for record := range sourceRecordChan {
+
+		// todo: ensure the correct number of args
+		args := make([]string, 0)
 
 		// modify r, driver.Record
 		if script != "" {
@@ -140,6 +156,10 @@ func (r *Runner) Run() error {
 
 			ctx.PushGlobalGoFunction("sendRecord", func(r driver.Record) {
 				record = r
+			})
+
+			ctx.PushGlobalGoFunction("sendArgs", func(a []string) {
+				args = a
 			})
 
 			ctx.PushGlobalGoFunction("skip", func() {
@@ -164,7 +184,7 @@ func (r *Runner) Run() error {
 		}
 
 		if r.DryRun {
-			return nil
+			continue
 		}
 
 		var query bytes.Buffer
@@ -173,7 +193,7 @@ func (r *Runner) Run() error {
 			return err
 		}
 
-		err = destinationDriver.In(query.String())
+		err = destinationDriver.In(query.String(), args)
 		if err != nil {
 			return err
 		}

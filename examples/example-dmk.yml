@@ -15,24 +15,6 @@ databases:
     configuration:
       clusterList: localhost:39042
       consistency: Quorum
-      credentials:
-        password: asdfasd
-        username: sfsfsad
-      keyspace: example
-  cassandra_docker_local:
-    component:
-      kind: Database
-      name: Cassandra Dev
-      machineName: cassandra_docker_local
-      description: Example data on the cassandra cluster
-    driver: cassandra
-    tunnel: ""
-    configuration:
-      clusterList: localhost:39042
-      consistency: Quorum
-      credentials:
-        password: asdfasd
-        username: sfsfsad
       keyspace: example
   example_csv_data:
     component:
@@ -60,6 +42,26 @@ databases:
       databasePort: 33306
       username: root
 migrations:
+  example_cassandra_to_cassandra:
+    component:
+      kind: Migration
+      name: Example Cassandra to Cassandra
+      machineName: example_cassandra_to_cassandra
+      description: Migreate from one Cassandra table to another.
+    sourcedb: cassandra_dev
+    destinationdb: cassandra_dev
+    sourcequery: |
+      SELECT system, name, id, description FROM migration_data WHERE system = ?;
+    sourcequerynargs: 1
+    sourcecountquery: |
+      SELECT count(1) as total FROM migration_data WHERE system = ?
+    destinationquery: |
+      INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)
+    destinationquerynargs: 0
+    transformationscript: |
+      var rec = getRecord();
+      print("processing id: " + rec.id);
+      sendArgs([rec.system, rec.name, rec.id.toString(), rec.description]);
   example_csv_to_cassandra:
     component:
       kind: Migration
@@ -67,11 +69,14 @@ migrations:
       machineName: example_csv_to_cassandra
       description: Load add example data from CSV into Cassandra.
     sourcedb: example_csv_data
-    destinationdb: cassandra_docker_local
+    destinationdb: cassandra_dev
     sourcequery: |
       *
+    sourcequerynargs: 0
+    sourcecountquery: ""
     destinationquery: |
       INSERT INTO migration_data JSON '{"system": "example", "id": "{{.id}}", "name": "{{.Name}}", "description": "{{.Description}}"}'
+    destinationquerynargs: 0
     transformationscript: |
       // Get the current record.
       var rec = getRecord();
@@ -123,7 +128,10 @@ migrations:
     destinationdb: cassandra_docker_local
     sourcequery: |
       SELECT * FROM migration_data;
+    sourcequerynargs: 0
+    sourcecountquery: ""
     destinationquery: |
       INSERT INTO migration_data JSON '{"id": {{.id}}, "name": "{{.name}}"}'
+    destinationquerynargs: 0
     transformationscript: ""
 tunnels: {}
