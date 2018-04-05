@@ -71,7 +71,7 @@ migrations:
     sourcequery: |
       *
     destinationquery: |
-      INSERT INTO migration_data JSON '{"id": "{{.id}}", "name": "{{.Name}}"}'
+      INSERT INTO migration_data JSON '{"system": "example", "id": "{{.id}}", "name": "{{.Name}}", "description": "{{.Description}}"}'
     transformationscript: |
       // Get the current record.
       var rec = getRecord();

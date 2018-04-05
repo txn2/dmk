@@ -84,6 +84,54 @@ func init() {
 		},
 	})
 
+	editCmd.AddCommand(&grumble.Command{
+		Name:      "migration",
+		Help:      "delete a migration",
+		Aliases:   []string{"m"},
+		AllowArgs: true,
+		Run: func(c *grumble.Context) error {
+			if ok := activeProjectCheck(); ok {
+
+				if len(c.Args) == 1 {
+					deleteDatabase(c.Args[0])
+					return nil
+				}
+
+				ms := make([]string, 0)
+
+				for k := range appState.Project.Migrations {
+					ms = append(ms, k)
+				}
+
+				dbMachineName := ""
+				dbPrompt := &survey.Select{
+					Message: "Choose a migration to remove:",
+					Options: ms,
+				}
+				survey.AskOne(dbPrompt, &dbMachineName, nil)
+
+				deleteMigration(dbMachineName)
+
+			}
+			return nil
+		},
+	})
+
+}
+
+func deleteMigration(machineName string) {
+	if _, ok := appState.Project.Migrations[machineName]; ok {
+		fmt.Printf("Removing migration %s.\n", machineName)
+		delete(appState.Project.Migrations, machineName)
+		saved := confirmAndSave(appState.Project.Component.MachineName, appState.Project)
+		if saved {
+			fmt.Println()
+			fmt.Printf("NOTICE: Project saved less migration %s.\n", machineName)
+		}
+		return
+	}
+
+	Cli.PrintError(errors.New("no migration found to remove: " + machineName))
 }
 
 func deleteTunnel(machineName string) {
@@ -98,7 +146,7 @@ func deleteTunnel(machineName string) {
 		return
 	}
 
-	Cli.PrintError(errors.New("no tunnel found for " + machineName))
+	Cli.PrintError(errors.New("no tunnel found to remove: " + machineName))
 }
 
 func deleteDatabase(machineName string) {
@@ -113,5 +161,5 @@ func deleteDatabase(machineName string) {
 		return
 	}
 
-	Cli.PrintError(errors.New("no database found for " + machineName))
+	Cli.PrintError(errors.New("no database found to remote for: " + machineName))
 }

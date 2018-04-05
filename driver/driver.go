@@ -49,6 +49,7 @@ type Driver interface {
 	Out(query string, args ArgSet) (<-chan Record, error) // outbound data
 	In(query string) error                                // inbound data
 	Done() error                                          // finalization tasks when user is done with Driver
+	ExpectedOut() (bool, int, error)                      // a false return means indefinite
 }
 
 // Manager handles the collection of drivers

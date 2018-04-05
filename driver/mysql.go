@@ -89,6 +89,12 @@ func (m *MySql) In(query string) error {
 	return nil
 }
 
+// ExpectedOut returns true and the number of expected outbound records,
+// false value mean indefinite.
+func (m *MySql) ExpectedOut() (bool, int, error) {
+	return false, 0, nil
+}
+
 // Out for Driver interface.
 func (m *MySql) Out(query string, args ArgSet) (<-chan Record, error) {
 	// call Configure with a driver.Config first

@@ -6,6 +6,8 @@ import (
 
 	"errors"
 
+	"log"
+
 	"github.com/AlecAivazis/survey"
 	"github.com/gocql/gocql"
 )
@@ -97,15 +99,32 @@ func (c *Cassandra) In(query string) error {
 	return nil
 }
 
+// ExpectedOut returns true and the number of expected outbound records,
+// false value mean indefinite.
+func (c *Cassandra) ExpectedOut() (bool, int, error) {
+	return false, 0, nil
+}
+
 // Out for Driver interface. CSV ignores the query and args, reading
 // the entire file and streaming each record as lines are parsed.
 func (c *Cassandra) Out(query string, args ArgSet) (<-chan Record, error) {
 	fmt.Printf("Cassandra executor is not yet functional\n")
 
 	recordChan := make(chan Record, 1)
-	//q := c.session.Query(query)
+	itr := c.session.Query(query, args).Consistency(gocql.One).Iter()
 
 	// check for args
+	go func() {
+		defer itr.Close()
+		row := make(map[string]interface{})
+		for itr.MapScan(row) {
+			recordChan <- row
+		}
+
+		if err := itr.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	return recordChan, nil
 }
