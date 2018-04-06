@@ -8,6 +8,8 @@ import (
 
 	"time"
 
+	"strings"
+
 	"github.com/Masterminds/sprig"
 	"github.com/cjimti/migration-kit/cfg"
 	"github.com/cjimti/migration-kit/driver"
@@ -107,8 +109,10 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 		return runResult, err
 	}
 
-	fmt.Printf("Source expects %d args.\n", migration.SourceQueryNArgs)
-	fmt.Printf("Received %d args.\n", len(sourceArgs))
+	if r.Verbose {
+		fmt.Printf("%s source query expects %d args.\n", machineName, migration.SourceQueryNArgs)
+		fmt.Printf("%s received %d args.\n", machineName, len(sourceArgs))
+	}
 
 	if migration.SourceQueryNArgs != len(sourceArgs) {
 		return runResult, errors.New(fmt.Sprintf("expecting %d args and got %d", migration.SourceQueryNArgs, len(sourceArgs)))
@@ -118,18 +122,28 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	//
 	//
 	// do we have the requested number of args
+	if r.Verbose {
+		fmt.Printf("Migration %s Source Query: %s\n", machineName, strings.Trim(migration.SourceQuery, "\n"))
+		fmt.Printf("Migration %s Source Args: %s\n", machineName, sourceArgs)
+	}
 	sourceRecordChan, err := sourceDriver.Out(migration.SourceQuery, sourceArgs)
 	if err != nil {
 		return runResult, err
 	}
 
 	// get the destination db
+	if r.Verbose {
+		fmt.Printf("Migration DestinationDb: %s\n", migration.DestinationDb)
+	}
 	destinationDb, ok := r.Project.Databases[migration.DestinationDb]
 	if ok != true {
 		return runResult, errors.New("no destination database found for " + migration.DestinationDb)
 	}
 
 	// get the destination driver
+	if r.Verbose {
+		fmt.Printf("Migration Driver: %s\n", destinationDb.Driver)
+	}
 	destinationDriver, err := r.DriverManager.GetNewDriver(destinationDb.Driver)
 	if err != nil {
 		return runResult, err
@@ -154,12 +168,12 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 		panic(err)
 	}
 
-	fmt.Printf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)
-
+	if r.Verbose {
+		fmt.Printf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)
+	}
 	// iterate over the sourceRecordChan for driver.Record objects
 	for record := range sourceRecordChan {
 
-		// todo: ensure the correct number of args
 		args := make([]string, 0)
 
 		// modify r, driver.Record
@@ -196,21 +210,18 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 			})
 
 			ctx.PushGlobalGoFunction("dump", func(obj interface{}) {
-				spew.Dump(obj)
+				sd := spew.Sdump(obj)
+				fmt.Printf(">>> SCRIPT %s: %s\n", machineName, sd)
+			})
+
+			ctx.PushGlobalGoFunction("print", func(obj interface{}) {
+				fmt.Printf(">>> SCRIPT %s: %s\n", machineName, obj)
 			})
 
 			// recursive migration (sub query) mainly for used with
 			// migrations that migrate to a collector
 			ctx.PushGlobalGoFunction("run", func(machineNameFromScript string, argsFromScript []string) []driver.ResultCollectionItem {
-				runner := &Runner{
-					Project:       r.Project,
-					DriverManager: r.DriverManager,
-					TunnelManager: r.TunnelManager,
-					DryRun:        r.DryRun,
-					Verbose:       r.Verbose,
-				}
-
-				runResult, err := runner.Run(machineNameFromScript, argsFromScript)
+				runResult, err := r.Run(machineNameFromScript, argsFromScript)
 				if err != nil {
 					fmt.Printf("ERROR: %s\n", err.Error())
 				}
@@ -218,12 +229,17 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 				dd := *runResult.DestinationDriver
 
 				if cdd, ok := dd.(*driver.Collector); ok {
-					fmt.Printf("We are a collector!\n")
 					collection := cdd.GetCollection()
-					spew.Dump(collection)
+					if r.Verbose {
+						fmt.Printf("Script will receive %d items from collector.\n", len(collection))
+					}
+
 					return collection
 				}
 
+				if r.Verbose {
+					fmt.Printf("WARNING: run() did not output to a collector.\n")
+				}
 				return []driver.ResultCollectionItem{}
 			})
 
@@ -251,7 +267,8 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 		}
 
 		if r.Verbose {
-			fmt.Printf("Out Query: %s\n", query.String())
+			fmt.Printf("Migration %s Destination Query: %s\n", machineName, strings.Trim(query.String(), "\n"))
+			fmt.Printf("Migration %s Destination Args: %s\n", machineName, args)
 		}
 
 		err = destinationDriver.In(query.String(), args, record)

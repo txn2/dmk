@@ -2,11 +2,12 @@ package driver
 
 import (
 	"errors"
+	"fmt"
 )
 
 type ResultCollectionItem struct {
-	Record *Record
-	Args   *[]string
+	Record Record
+	Args   []string
 }
 
 type ResultCollection []ResultCollectionItem
@@ -18,15 +19,12 @@ var CollectorStore = map[string]ResultCollection{}
 type Collector struct {
 	config        Config
 	collectionKey string
+	store         ResultCollection
 }
 
 // GetCollection returns slice of ResultCollectionItem
 func (c *Collector) GetCollection() []ResultCollectionItem {
-	if collection, ok := CollectorStore[c.collectionKey]; ok {
-		return collection
-	}
-
-	return []ResultCollectionItem{}
+	return c.store
 }
 
 // HasOutQuery is false for Collector
@@ -48,7 +46,10 @@ func (c *Collector) HasCountQuery() bool {
 func (c *Collector) Configure(config Config) error {
 	c.config = config
 
+	//fmt.Println("Configuring collector.")
+
 	if _, ok := config["collectionKey"]; ok == false {
+		fmt.Println("ERROR: no collectionKey")
 		return errors.New("collectionKey does not exist in configuration")
 	}
 
@@ -64,11 +65,15 @@ func (c *Collector) Done() error {
 
 // In for Driver interface.
 func (c *Collector) In(query string, args []string, record Record) error {
+	//fmt.Println("Got collector in.")
 	// in the future query can be used to specify a different storage key and type
-	CollectorStore[c.collectionKey] = append(CollectorStore[c.collectionKey], ResultCollectionItem{
-		Record: &record,
-		Args:   &args,
-	})
+	rci := ResultCollectionItem{
+		Record: record,
+		Args:   args,
+	}
+
+	CollectorStore[c.collectionKey] = append(CollectorStore[c.collectionKey], rci)
+	c.store = append(c.store, rci)
 
 	return nil
 }
@@ -78,17 +83,15 @@ func (c *Collector) ExpectedOut() (bool, int, error) {
 	return true, len(CollectorStore[c.collectionKey]), nil
 }
 
-// Out for Driver interface. CSV ignores the query and args, reading
-// the entire file and streaming each record as lines are parsed.
+// Out for Driver interface.
 func (c *Collector) Out(query string, args []string) (<-chan Record, error) {
-	// call Configure with a driver.Config first
 
 	recordChan := make(chan Record, 1)
 
 	go func() {
 		if collection, ok := CollectorStore[c.collectionKey]; ok {
 			for _, collectionItem := range collection {
-				recordChan <- *collectionItem.Record
+				recordChan <- collectionItem.Record
 			}
 		}
 		close(recordChan)

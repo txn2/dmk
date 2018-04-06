@@ -47,7 +47,7 @@ func (c *Cassandra) HasCountQuery() bool {
 // Configure (keys determined in ConfigSurvey)
 func (c *Cassandra) Configure(config Config) error {
 	// @TODO improve validation
-	fmt.Printf("Configuring Cassandra\n")
+	//fmt.Printf("Configuring Cassandra\n")
 
 	// get cluster nodes
 	nodes := strings.Split(config["clusterList"].(string), ",")
@@ -136,11 +136,8 @@ func (c *Cassandra) Out(query string, args []string) (<-chan Record, error) {
 		casArgs[i] = v
 	}
 
-	///casArgs := make([]interface{...args})
-
 	recordChan := make(chan Record, 1)
 	q := c.session.Query(query, casArgs...).Consistency(gocql.Quorum)
-	fmt.Printf("Out Query: %s\n", q.String())
 
 	itr := q.Iter()
 

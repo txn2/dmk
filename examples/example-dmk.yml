@@ -86,16 +86,31 @@ migrations:
     sourceCountQuery: |
       SELECT count(1) as total FROM migration_name WHERE system = ?;
     destinationQuery: |
-      UPDATE migration_sets SET ids = ? WHERE system = ? AND name = ?
+      UPDATE migration_sets SET ids = { {{.idsString}} } WHERE system = ? AND name = ?
     destinationQueryNArgs: 0
     transformationScript: |
       // todo: run data collector for each record returned from source, set record and arts
       var rec = getRecord();
       print("rec.system = " + rec.system)
       print("rec.name = " + rec.name)
+
       var res = run("collect_by_name", [rec.system, rec.name]);
-      //var collection = res.DestinationDriver.GetCollection();
-      dump(res)
+      print("SCRIPT got " + res.length + " items in collection.");
+
+      // store the ids
+      var idsString = "";
+      var first = true;
+      for (i = 0; i < res.length; i++) {
+          var sep = first ? "" : ",";
+          idsString = idsString + sep + res[i].Record.id;
+          first = false;
+      }
+
+      rec.idsString = idsString;
+
+      sendRecord(rec);
+      sendArgs([rec.system, rec.name]);
+
   cassnadra_to_cassandra_name_lookup:
     component:
       kind: Migration
