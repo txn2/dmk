@@ -93,7 +93,7 @@ func (m *MySql) Configure(config Config) error {
 	return nil
 }
 
-// InDone for Driver interface.
+// Done for Driver interface.
 func (m *MySql) Done() error {
 	return nil
 }

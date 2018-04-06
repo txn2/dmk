@@ -46,7 +46,7 @@ func (c *CSV) Configure(config Config) error {
 	return nil
 }
 
-// InDone for Driver interface.
+// Done for Driver interface.
 func (c *CSV) Done() error {
 	return nil
 }

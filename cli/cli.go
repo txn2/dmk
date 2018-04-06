@@ -42,6 +42,8 @@ var Cli = grumble.New(&grumble.Config{
 
 // DriverManager manages the available database drivers.
 var DriverManager = driver.DriverManager
+
+// TunnelManager manages the available tunnels.
 var TunnelManager = tunnel.Manager{}
 
 // init the cmd package

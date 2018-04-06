@@ -8,7 +8,7 @@ import (
 	"github.com/AlecAivazis/survey"
 )
 
-// machineName makes a string with unsafe characters replaced
+// MachineName makes a string with unsafe characters replaced
 func MachineName(name string) string {
 	reg, err := regexp.Compile("[^a-zA-Z0-9]+")
 	if err != nil {

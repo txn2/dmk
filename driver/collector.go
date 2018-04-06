@@ -5,13 +5,16 @@ import (
 	"fmt"
 )
 
+// ResultCollectionItem represents a set of records and corresponding args.
 type ResultCollectionItem struct {
 	Record Record
 	Args   []string
 }
 
+// ResultCollection represents a slice of ResultCollectionItem
 type ResultCollection []ResultCollectionItem
 
+// CollectorStore holds a map of ResultCollection
 var CollectorStore = map[string]ResultCollection{}
 
 // Collector implements data.Driver
@@ -58,7 +61,7 @@ func (c *Collector) Configure(config Config) error {
 	return nil
 }
 
-// InDone for Driver interface.
+// Done for Driver interface.
 func (c *Collector) Done() error {
 	return nil
 }

@@ -87,12 +87,12 @@ func (c *Cassandra) Configure(config Config) error {
 	return nil
 }
 
-// InDone for Driver interface.
+// Done for Driver interface.
 func (c *Cassandra) Done() error {
 	return nil
 }
 
-// Done for Driver interface. @TODO implementation
+// In for Driver interface.
 func (c *Cassandra) In(query string, args []string, record Record) error {
 
 	casArgs := make([]interface{}, len(args))

@@ -31,6 +31,7 @@ import (
 // 2) Each source result becomes transformed data (map[string]interface) and is then used as arguments along with
 // a query against the destination database.
 
+// Runner runs migrations.
 type Runner struct {
 	Project       Project
 	DriverManager *driver.Manager
@@ -98,6 +99,7 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	}
 
 	// get a driver for the type and configure it
+	// todo: reuse soure driver if we already have one, add config to get new
 	sourceDriver, err := r.DriverManager.GetNewDriver(sourceDb.Driver)
 	if err != nil {
 		return runResult, err
@@ -115,7 +117,7 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	}
 
 	if migration.SourceQueryNArgs != len(sourceArgs) {
-		return runResult, errors.New(fmt.Sprintf("expecting %d args and got %d", migration.SourceQueryNArgs, len(sourceArgs)))
+		return runResult, fmt.Errorf("expecting %d args and got %d", migration.SourceQueryNArgs, len(sourceArgs))
 	}
 
 	// Source data collection.

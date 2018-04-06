@@ -31,7 +31,7 @@ func (d *Debug) Configure(config Config) error {
 	return nil
 }
 
-// InDone for Driver interface.
+// Done for Driver interface.
 func (d *Debug) Done() error {
 	return nil
 }
