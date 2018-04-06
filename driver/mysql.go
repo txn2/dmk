@@ -122,7 +122,12 @@ func (m *MySql) Out(query string, args []string) (<-chan Record, error) {
 
 	database := m.db
 
-	rows, err := database.Query(query)
+	myArgs := make([]interface{}, len(args))
+	for i, v := range args {
+		myArgs[i] = v
+	}
+
+	rows, err := database.Query(query, myArgs...)
 	if err != nil {
 		return nil, err
 	}
