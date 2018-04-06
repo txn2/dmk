@@ -1,4 +1,4 @@
-![Data Migration Kit](docs/dmk.png)
+![Data Migration Kit](dmk-mast.jpg)
 
 
 ## Work in Progress
