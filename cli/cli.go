@@ -129,6 +129,7 @@ func fileExists(file string) bool {
 	return false
 }
 
+// PromptCfg configures the visual prompt.
 type PromptCfg struct {
 	Value   *string
 	Message string
