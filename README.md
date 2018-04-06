@@ -34,6 +34,29 @@ the local Cassandra running from the `docker-compose` above.
 $ docker run -it --rm --net host cassandra cqlsh localhost 39042
 ```
 
+Run the following example migrations in order:
+
+```bash
+go run ./dmk.go -d examples -p example run -v example_csv_to_cassandra
+# check: select * from example.migration_data;
+
+go run ./dmk.go -d examples -p example run -v cassandra_to_cassandra_by_name example
+# check: select * from example.migration_data_name;
+
+go run ./dmk.go -d examples -p example run -v cassnadra_to_cassandra_name_lookup example
+# check: select * from example.migration_name; 
+
+go run ./dmk.go -d examples -p example run -v cassandra_to_cassandra_using_collector example
+# check: select * from example.migration_sets;
+
+
+```
+## Todo
+
+- Reuse DB connection for script run sub-migrations.
+- Better error messaging (location of error)
+- General Performance improvements.
+
 ## Development
 
 Run `go run ./dmk.go -d ./examples/`
