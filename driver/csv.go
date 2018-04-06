@@ -16,8 +16,13 @@ type CSV struct {
 	config Config
 }
 
-// HasSourceQuery is false for CSV
-func (c *CSV) HasSourceQuery() bool {
+// HasOutQuery is false for CSV
+func (c *CSV) HasOutQuery() bool {
+	return false
+}
+
+// HasInQuery is false for CSV
+func (c *CSV) HasInQuery() bool {
 	return false
 }
 
@@ -41,13 +46,13 @@ func (c *CSV) Configure(config Config) error {
 	return nil
 }
 
-// Done for Driver interface.
+// InDone for Driver interface.
 func (c *CSV) Done() error {
 	return nil
 }
 
 // In for Driver interface. @TODO implementation
-func (c *CSV) In(query string, args []string) error {
+func (c *CSV) In(query string, args []string, record Record) error {
 	fmt.Printf("CSV In is not yet implemented.\n")
 	return nil
 }
@@ -115,7 +120,7 @@ func (c *CSV) Out(query string, args []string) (<-chan Record, error) {
 }
 
 // ConfigSurvey is an implementation of Driver
-func (c *CSV) ConfigSurvey(config Config) error {
+func (c *CSV) ConfigSurvey(config Config, machineName string) error {
 	fmt.Println("---- CSV Driver Configuration ----")
 
 	filePath := ""

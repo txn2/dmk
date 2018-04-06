@@ -13,6 +13,7 @@ import (
 
 	"github.com/AlecAivazis/survey"
 	"github.com/cjimti/migration-kit/cfg"
+	"github.com/cjimti/migration-kit/cliutils"
 	"github.com/cjimti/migration-kit/driver"
 	"github.com/cjimti/migration-kit/migrate"
 	"github.com/desertbit/grumble"
@@ -83,7 +84,7 @@ func createTunnel() {
 	}
 	survey.AskOne(namePrompt, &name, nil)
 
-	machineName := machineName(name)
+	machineName := cliutils.MachineName(name)
 
 	description := ""
 	descPrompt := &survey.Input{
@@ -193,7 +194,7 @@ func createDatabase(database cfg.Database) {
 	if database.Component.Name != "" {
 		name = database.Component.Name
 	}
-	machineName := machineName(name)
+	machineName := cliutils.MachineName(name)
 
 	description := ""
 	prompt = &survey.Input{
@@ -257,7 +258,7 @@ func createDatabase(database cfg.Database) {
 	}
 
 	// configuration survey
-	dbDriver.ConfigSurvey(database.Configuration)
+	dbDriver.ConfigSurvey(database.Configuration, machineName)
 
 	if appState.Project.Databases == nil {
 		appState.Project.Databases = map[string]cfg.Database{}
@@ -280,7 +281,7 @@ func createMigration() {
 	}
 	survey.AskOne(prompt, &name, nil)
 
-	machineName := machineName(name)
+	machineName := cliutils.MachineName(name)
 
 	description := ""
 	prompt = &survey.Input{
@@ -315,7 +316,7 @@ func createMigration() {
 	foundReplacements := 0
 
 	// does the selected driver use a source query?
-	if sourceDbDriver.HasSourceQuery() {
+	if sourceDbDriver.HasOutQuery() {
 
 		sourceQueryPrompt := &survey.Editor{
 			Message: "SOURCE Query:",
@@ -368,8 +369,7 @@ func createMigration() {
 
 	if script == true {
 		scriptPrompt := &survey.Editor{
-			Message: "Javascript is sent an object named \"data\".",
-			Help:    "Manipulate the \"data\" object with javascript",
+			Message: "Write transformation in javascript.",
 		}
 		survey.AskOne(scriptPrompt, &migration.TransformationScript, nil)
 	}
@@ -413,7 +413,7 @@ func createProject() {
 	}
 	survey.AskOne(prompt, &name, nil)
 
-	machineName := machineName(name)
+	machineName := cliutils.MachineName(name)
 
 	description := ""
 	prompt = &survey.Input{

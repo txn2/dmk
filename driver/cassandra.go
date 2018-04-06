@@ -29,8 +29,13 @@ type Cassandra struct {
 	config  Config
 }
 
-// HasSourceQuery is true for Cassandra
-func (c *Cassandra) HasSourceQuery() bool {
+// HasOutQuery is true for Cassandra
+func (c *Cassandra) HasOutQuery() bool {
+	return true
+}
+
+// HasInQuery is true for Cassandra
+func (c *Cassandra) HasInQuery() bool {
 	return true
 }
 
@@ -82,13 +87,13 @@ func (c *Cassandra) Configure(config Config) error {
 	return nil
 }
 
-// Done for Driver interface.
+// InDone for Driver interface.
 func (c *Cassandra) Done() error {
 	return nil
 }
 
-// In for Driver interface. @TODO implementation
-func (c *Cassandra) In(query string, args []string) error {
+// Done for Driver interface. @TODO implementation
+func (c *Cassandra) In(query string, args []string, record Record) error {
 
 	casArgs := make([]interface{}, len(args))
 	for i, v := range args {
@@ -125,7 +130,6 @@ func (c *Cassandra) ExpectedOut() (bool, int, error) {
 
 // Out for Driver interface. Data coming out of Cassandra
 func (c *Cassandra) Out(query string, args []string) (<-chan Record, error) {
-	fmt.Printf("Cassandra executor is not yet functional\n")
 
 	casArgs := make([]interface{}, len(args))
 	for i, v := range args {
@@ -163,7 +167,7 @@ func (c *Cassandra) Out(query string, args []string) (<-chan Record, error) {
 }
 
 // ConfigSurvey is an implementation of Driver
-func (c *Cassandra) ConfigSurvey(config Config) error {
+func (c *Cassandra) ConfigSurvey(config Config, machineName string) error {
 	fmt.Println("---- Cassandra Driver Configuration ----")
 
 	clusterList := ""

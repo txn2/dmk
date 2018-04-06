@@ -97,6 +97,8 @@ func describeMigration(machineName string) {
 		if sourceDb, ok := appState.Project.Databases[m.SourceDb]; ok {
 			fmt.Printf("\tDatabase:\n")
 			fmt.Printf("\t - %s [%s]\n", sourceDb.Component.Name, m.SourceDb)
+			fmt.Printf("\tQuery:\n")
+			fmt.Printf("\t - %s\n", m.SourceQuery)
 		}
 
 		fmt.Println()
@@ -104,6 +106,8 @@ func describeMigration(machineName string) {
 		if destDb, ok := appState.Project.Databases[m.DestinationDb]; ok {
 			fmt.Printf("\tDatabase:\n")
 			fmt.Printf("\t - %s [%s]\n", destDb.Component.Name, m.DestinationDb)
+			fmt.Printf("\tQuery:\n")
+			fmt.Printf("\t - %s\n", m.DestinationQuery)
 		}
 
 		fmt.Println()

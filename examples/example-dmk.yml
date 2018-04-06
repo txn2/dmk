@@ -41,12 +41,22 @@ databases:
       databaseName: migration_data
       databasePort: 33306
       username: root
+  names_collector:
+    component:
+      kind: Database
+      name: Names Collector
+      machineName: names_collector
+      description: Collector for names.
+    driver: collector
+    tunnel: ""
+    configuration:
+      collectionKey: names_collector
 migrations:
-  example_cassandra_to_cassandra:
+  cassandra_to_cassandra_by_name:
     component:
       kind: Migration
-      name: Example Cassandra to Cassandra
-      machineName: example_cassandra_to_cassandra
+      name: Cassandra to Cassandra By Name
+      machineName: cassandra_to_cassandra_by_name
       description: Migreate from one Cassandra table to another.
     sourceDb: cassandra_dev
     destinationDb: cassandra_dev
@@ -62,6 +72,67 @@ migrations:
       var rec = getRecord();
       print("processing id: " + rec.id);
       sendArgs([rec.system, rec.name, rec.id.toString(), rec.description]);
+  cassandra_to_cassandra_using_collector:
+    component:
+      kind: Migration
+      name: Cassandra to Cassandra using Collector
+      machineName: cassandra_to_cassandra_using_collector
+      description: Get name from migration_name and get their ids with collector.
+    sourceDb: cassandra_dev
+    destinationDb: cassandra_dev
+    sourceQuery: |
+      SELECT system, name FROM migration_name WHERE system = ?;
+    sourceQueryNArgs: 1
+    sourceCountQuery: |
+      SELECT count(1) as total FROM migration_name WHERE system = ?;
+    destinationQuery: |
+      UPDATE migration_sets SET ids = ? WHERE system = ? AND name = ?
+    destinationQueryNArgs: 0
+    transformationScript: |
+      // todo: run data collector for each record returned from source, set record and arts
+      var rec = getRecord();
+      print("rec.system = " + rec.system)
+      print("rec.name = " + rec.name)
+      var res = run("collect_by_name", [rec.system, rec.name]);
+      //var collection = res.DestinationDriver.GetCollection();
+      dump(res)
+  cassnadra_to_cassandra_name_lookup:
+    component:
+      kind: Migration
+      name: Cassnadra to Cassandra Name Lookup
+      machineName: cassnadra_to_cassandra_name_lookup
+      description: Migrate data from migration_data to migration_name to make a table
+        of unique names.
+    sourceDb: cassandra_dev
+    destinationDb: cassandra_dev
+    sourceQuery: |
+      SELECT name, system FROM migration_data WHERE system = ?
+    sourceQueryNArgs: 1
+    sourceCountQuery: |
+      SELECT count(1) as total FROM migration_data WHERE system = ?
+    destinationQuery: |
+      UPDATE migration_name SET b64enc = '{{.name | b64enc}}', sha256sum = '{{.name | sha256sum}}' WHERE system = ? AND name = ?
+    destinationQueryNArgs: 0
+    transformationScript: |
+      var rec = getRecord();
+      // if you need to dump(rec); do it?
+      sendArgs([rec.system,rec.name]);
+  collect_by_name:
+    component:
+      kind: Migration
+      name: Collect by Name
+      machineName: collect_by_name
+      description: Collect rows by name.
+    sourceDb: cassandra_dev
+    destinationDb: names_collector
+    sourceQuery: |
+      SELECT name, id FROM migration_data_name WHERE system = ? AND name = ?
+    sourceQueryNArgs: 2
+    sourceCountQuery: |
+      SELECT count(1) as total FROM migration_data_name WHERE system = ? AND name = ?
+    destinationQuery: ""
+    destinationQueryNArgs: 0
+    transformationScript: ""
   example_csv_to_cassandra:
     component:
       kind: Migration

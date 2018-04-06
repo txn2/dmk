@@ -16,6 +16,7 @@ func init() {
 		AllowArgs: true,
 		Flags: func(f *grumble.Flags) {
 			f.Bool("d", "dry-run", false, "Dry run outputs the first 5 records.")
+			f.Bool("v", "verbose", false, "Verbose output.")
 		},
 		Run: func(c *grumble.Context) error {
 			if ok := activeProjectCheck(); ok {
@@ -41,14 +42,14 @@ func runMigration(machineName string, f grumble.FlagMap, args []string) {
 
 	runner := &migrate.Runner{
 		Project:       appState.Project,
-		MachineName:   machineName,
 		DriverManager: DriverManager,
 		TunnelManager: TunnelManager,
 		DryRun:        f.Bool("dry-run"),
-		SourceArgs:    args,
+		Verbose:       f.Bool("verbose"),
 	}
 
-	err := runner.Run()
+	// todo: display stats when the result becomes useful
+	_, err := runner.Run(machineName, args)
 	if err != nil {
 		Cli.PrintError(err)
 	}

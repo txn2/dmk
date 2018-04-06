@@ -16,6 +16,15 @@ CREATE TABLE IF NOT EXISTS example.migration_data_name (
     PRIMARY KEY(system, name, id)
 );
 
+CREATE TABLE IF NOT EXISTS example.migration_name (
+    system text,
+    name text,
+    sha256sum text,
+    b64enc text,
+    PRIMARY KEY(system, name)
+);
+
+
 CREATE TABLE IF NOT EXISTS example.migration_sets (
     system text,
     name text,

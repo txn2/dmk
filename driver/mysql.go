@@ -15,8 +15,13 @@ type MySql struct {
 	db     *sql.DB
 }
 
-// HasSourceQuery is true for MySql
-func (m *MySql) HasSourceQuery() bool {
+// HasOutQuery is true for MySql
+func (m *MySql) HasOutQuery() bool {
+	return true
+}
+
+// HasInQuery is true for MySql
+func (m *MySql) HasInQuery() bool {
 	return true
 }
 
@@ -88,13 +93,13 @@ func (m *MySql) Configure(config Config) error {
 	return nil
 }
 
-// Done for Driver interface.
+// InDone for Driver interface.
 func (m *MySql) Done() error {
 	return nil
 }
 
 // In for Driver interface. @TODO implementation
-func (m *MySql) In(query string, args []string) error {
+func (m *MySql) In(query string, args []string, record Record) error {
 	fmt.Printf("MySql In is not yet implemented.\n")
 	return nil
 }
@@ -160,7 +165,7 @@ func (m *MySql) Out(query string, args []string) (<-chan Record, error) {
 }
 
 // ConfigSurvey is an implementation of Driver
-func (m *MySql) ConfigSurvey(config Config) error {
+func (m *MySql) ConfigSurvey(config Config, machineName string) error {
 	fmt.Println("---- MySql Driver Configuration ----")
 
 	host := ""
