@@ -64,6 +64,15 @@ Run `go run ./dmk.go -d ./examples/`
 
 Use `godep save` after adding any dependencies.
 
+## Release Development
+
+Uses [goreleaser](https://goreleaser.com):
+
+Install goreleaser with brew (mac):
+`brew install goreleaser/tap/goreleaser`
+
+Build without releasing:
+`goreleaser --skip-publish --rm-dist --skip-validate`
 
 #### Containers
 

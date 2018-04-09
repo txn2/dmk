@@ -1,4 +1,5 @@
 .idea
+dist
 *-dmk.yml
 !example-dmk.yml
 projects
