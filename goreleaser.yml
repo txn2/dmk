@@ -8,8 +8,6 @@ build:
   # For more info refer to https://golang.org/doc/install/source#environment
   # Defaults are darwin and linux
   goos:
-    - linux
-    - windows
     - darwin
 
   # GOARCH to build in.
@@ -17,10 +15,6 @@ build:
   # Defaults are 386 and amd64
   goarch:
     - amd64
-    - arm
-
-  goarm:
-    - 6
 
 # Archive customization
 archive:
@@ -38,7 +32,6 @@ archive:
   # By default, `replacements` replace GOOS and GOARCH values with valid outputs
   # of `uname -s` and `uname -m` respectively.
   replacements:
-    arm: arm32v6
     amd64: amd64
     386: 386
     darwin: macOS
