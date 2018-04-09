@@ -14,6 +14,7 @@ import (
 	"github.com/cjimti/migration-kit/cfg"
 	"github.com/cjimti/migration-kit/driver"
 	"github.com/cjimti/migration-kit/tunnel"
+	jsutils "github.com/cjimti/migration-kit/utils"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/mcuadros/go-candyjs"
 )
@@ -161,6 +162,11 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	// see https://github.com/mcuadros/go-candyjs
 	ctx := candyjs.NewContext()
 	defer ctx.DestroyHeap()
+
+	utils := jsutils.Utils{}
+
+	ctx.PushGlobalStruct("utils", utils)
+
 	storage := make(map[string]interface{})
 
 	queryTemplate, err := template.New("query").Funcs(sprig.TxtFuncMap()).Parse(migration.DestinationQuery)
