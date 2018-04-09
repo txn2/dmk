@@ -13,6 +13,16 @@ This project is under development.
 
 -------
 
+## Alpha Preview
+
+On MacOS with [brew]() installed.
+
+Run:
+```bash
+brew tap cjimti/homebrew-tap
+brew install dmk
+```
+
 ## Testing
 
 Use `docker-compose` to bring up Cassandra and MySql test databases.
