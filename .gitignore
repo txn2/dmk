@@ -1,5 +1,6 @@
 .idea
 dist
+dev/scr
 *-dmk.yml
 !example-dmk.yml
 projects
