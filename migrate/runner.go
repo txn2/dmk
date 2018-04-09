@@ -11,10 +11,10 @@ import (
 	"strings"
 
 	"github.com/Masterminds/sprig"
-	"github.com/cjimti/migration-kit/cfg"
-	"github.com/cjimti/migration-kit/driver"
-	"github.com/cjimti/migration-kit/tunnel"
-	jsutils "github.com/cjimti/migration-kit/utils"
+	"github.com/cjimti/dmk/cfg"
+	"github.com/cjimti/dmk/driver"
+	"github.com/cjimti/dmk/tunnel"
+	jsutils "github.com/cjimti/dmk/utils"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/mcuadros/go-candyjs"
 )

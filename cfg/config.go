@@ -1,7 +1,7 @@
 package cfg
 
 import (
-	"github.com/cjimti/migration-kit/driver"
+	"github.com/cjimti/dmk/driver"
 )
 
 // Component is a generic key value set defining a component

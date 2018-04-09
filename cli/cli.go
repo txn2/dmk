@@ -8,9 +8,9 @@ import (
 	"errors"
 
 	"github.com/AlecAivazis/survey"
-	"github.com/cjimti/migration-kit/driver"
-	"github.com/cjimti/migration-kit/migrate"
-	"github.com/cjimti/migration-kit/tunnel"
+	"github.com/cjimti/dmk/driver"
+	"github.com/cjimti/dmk/migrate"
+	"github.com/cjimti/dmk/tunnel"
 	"github.com/desertbit/grumble"
 	"github.com/fatih/color"
 	"github.com/go-yaml/yaml"

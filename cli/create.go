@@ -12,10 +12,10 @@ import (
 	"errors"
 
 	"github.com/AlecAivazis/survey"
-	"github.com/cjimti/migration-kit/cfg"
-	"github.com/cjimti/migration-kit/cliutils"
-	"github.com/cjimti/migration-kit/driver"
-	"github.com/cjimti/migration-kit/migrate"
+	"github.com/cjimti/dmk/cfg"
+	"github.com/cjimti/dmk/cliutils"
+	"github.com/cjimti/dmk/driver"
+	"github.com/cjimti/dmk/migrate"
 	"github.com/desertbit/grumble"
 )
 

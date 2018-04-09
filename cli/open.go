@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/cjimti/migration-kit/migrate"
+	"github.com/cjimti/dmk/migrate"
 	"github.com/desertbit/grumble"
 )
 

@@ -60,7 +60,7 @@ brew:
 
   folder: Formula
 
-  homepage: https://github.com/cjimti/migration-kit
+  homepage: https://github.com/cjimti/dmk
 
   description: "Declarative data migration in yaml (with embedded javascript support.)"
 

@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/cjimti/migration-kit",
+	"ImportPath": "github.com/cjimti/dmk",
 	"GoVersion": "go1.10",
 	"GodepVersion": "v80",
 	"Deps": [
