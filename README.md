@@ -17,10 +17,15 @@ This project is under development.
 
 On MacOS with [brew]() installed.
 
-Run:
+**Run:**
 ```bash
 brew tap cjimti/homebrew-tap
 brew install dmk
+```
+
+**Upgrade:**
+```bash
+brew upgrade dmk
 ```
 
 ## Testing
