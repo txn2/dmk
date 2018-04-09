@@ -64,8 +64,5 @@ brew:
 
   description: "Declarative data migration in yaml (with embedded javascript support.)"
 
-  dependencies:
-    - rsync
-
   test: |
     system "#{bin}/dmk --help"
