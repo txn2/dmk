@@ -8,6 +8,8 @@ import (
 
 	"log"
 
+	"time"
+
 	"github.com/AlecAivazis/survey"
 	"github.com/gocql/gocql"
 )
@@ -59,6 +61,7 @@ func (c *Cassandra) Configure(config Config) error {
 	cluster.Compressor = &gocql.SnappyCompressor{}
 	cluster.RetryPolicy = &gocql.ExponentialBackoffRetryPolicy{NumRetries: 3}
 	cluster.Consistency = gocql.LocalQuorum
+	cluster.Timeout = 10 * time.Second
 
 	if credentialsInt, ok := config["credentials"].(map[interface{}]interface{}); ok {
 		// create u/p slice
