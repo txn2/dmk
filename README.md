@@ -1,15 +1,15 @@
 ![Data Migration Kit](dmk-mast.jpg)
 
+[![DMK Release](https://img.shields.io/github/release/cjimti/dmk.svg)](https://github.com/cjimti/dmk/releases)
+[![Build Status](https://travis-ci.org/cjimti/dmk.svg?branch=master)](https://travis-ci.org/cjimti/dmk)
+[![Go Report Card](https://goreportcard.com/badge/github.com/cjimti/dmk)](https://goreportcard.com/report/github.com/cjimti/dmk)
+
+
+# DMK - Data Migration Kit
 
 ## Work in Progress
 
 This project is under development.
-
-# DMK - Data Migration Kit
-
-[![DMK Release](https://img.shields.io/github/release/cjimti/dmk.svg)](https://github.com/cjimti/dmk/releases)
-[![Build Status](https://travis-ci.org/cjimti/dmk.svg?branch=master)](https://travis-ci.org/cjimti/dmk)
-[![Go Report Card](https://goreportcard.com/badge/github.com/cjimti/dmk)](https://goreportcard.com/report/github.com/cjimti/dmk)
 
 -------
 
