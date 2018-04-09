@@ -48,7 +48,7 @@ archive:
     - LICENSE
 
 brew:
-  name: dmkit
+  name: dmk
 
   github:
     owner: cjimti
@@ -68,4 +68,4 @@ brew:
     - rsync
 
   test: |
-    system "#{bin}/dmkit --help"
+    system "#{bin}/dmk --help"
