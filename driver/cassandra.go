@@ -31,6 +31,11 @@ type Cassandra struct {
 	config  Config
 }
 
+// Init initializes at the beginning of each run.
+func (c *Cassandra) Init() {
+
+}
+
 // HasOutQuery is true for Cassandra
 func (c *Cassandra) HasOutQuery() bool {
 	return true

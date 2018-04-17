@@ -9,6 +9,11 @@ type Debug struct {
 	config Config
 }
 
+// Init initializes at the beginning of each run.
+func (d *Debug) Init() {
+
+}
+
 // HasOutQuery is false for Debug
 func (d *Debug) HasOutQuery() bool {
 	return true

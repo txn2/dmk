@@ -39,6 +39,41 @@ type Runner struct {
 	TunnelManager tunnel.Manager
 	DryRun        bool
 	Verbose       bool
+	drivers  	  map[string]driver.Driver // store configured drivers
+}
+
+// configureDriver configures a driver for the migration and database. The configured
+// drivers is stored in the event it needs to be re-used in a sub migration.
+func (r *Runner) configureDriver(migration string, db cfg.Database) (driver.Driver, error) {
+	key := migration + "_" + db.Component.MachineName
+
+	if r.drivers == nil {
+		r.drivers = make(map[string]driver.Driver,0)
+	}
+
+	// do we have a configured driver for this migration and database?
+	if d, ok := r.drivers[key]; ok {
+		d.Init()
+		return d, nil
+	}
+
+	// get a driver of the specified type
+	d, err := r.DriverManager.GetNewDriver(db.Driver)
+	if err != nil {
+		return nil, err
+	}
+
+	// configure the driver
+	err = d.Configure(db.Configuration)
+	if err != nil {
+		return nil, err
+	}
+
+	// store the driver
+	r.drivers[key] = d
+
+	d.Init()
+	return d, nil
 }
 
 // tunnel if needed
@@ -99,18 +134,15 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 		return runResult, errors.New("unable to tunnel for " + sourceDb.Component.Name)
 	}
 
-	// get a driver for the type and configure it
-	// todo: reuse soure driver if we already have one, add config to get new
-	sourceDriver, err := r.DriverManager.GetNewDriver(sourceDb.Driver)
+	// get a driver for the source of migration
+	sourceDriver, err := r.configureDriver(machineName, sourceDb)
 	if err != nil {
 		return runResult, err
 	}
+
+	// set a pointer to the source driver in the run result
 	runResult.SourceDriver = &sourceDriver
 
-	err = sourceDriver.Configure(sourceDb.Configuration)
-	if err != nil {
-		return runResult, err
-	}
 
 	if r.Verbose {
 		fmt.Printf("%s source query expects %d args.\n", machineName, migration.SourceQueryNArgs)
@@ -122,8 +154,6 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	}
 
 	// Source data collection.
-	//
-	//
 	// do we have the requested number of args
 	if r.Verbose {
 		fmt.Printf("Migration %s Source Query: %s\n", machineName, strings.Trim(migration.SourceQuery, "\n"))
@@ -147,14 +177,12 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	if r.Verbose {
 		fmt.Printf("Migration Driver: %s\n", destinationDb.Driver)
 	}
-	destinationDriver, err := r.DriverManager.GetNewDriver(destinationDb.Driver)
+
+	destinationDriver, err := r.configureDriver(machineName, destinationDb)
 	if err != nil {
 		return runResult, err
 	}
 	runResult.DestinationDriver = &destinationDriver
-
-	// configure destination driver
-	destinationDriver.Configure(destinationDb.Configuration)
 
 	// javascript transformation script
 	script := migration.TransformationScript

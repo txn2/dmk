@@ -16,6 +16,11 @@ type CSV struct {
 	config Config
 }
 
+// Init initializes at the beginning of each run.
+func (c *CSV) Init() {
+
+}
+
 // HasOutQuery is false for CSV
 func (c *CSV) HasOutQuery() bool {
 	return false

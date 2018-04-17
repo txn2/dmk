@@ -15,6 +15,11 @@ type MySql struct {
 	db     *sql.DB
 }
 
+// Init initializes at the beginning of each run.
+func (m *MySql) Init() {
+
+}
+
 // HasOutQuery is true for MySql
 func (m *MySql) HasOutQuery() bool {
 	return true

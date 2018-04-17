@@ -23,6 +23,12 @@ type Collector struct {
 	config        Config
 	collectionKey string
 	store         ResultCollection
+	init          bool
+}
+
+// Init initializes at the beginning of each run.
+func (c *Collector) Init() {
+	c.store = nil
 }
 
 // GetCollection returns slice of ResultCollectionItem

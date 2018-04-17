@@ -44,6 +44,7 @@ type DataMap interface {
 type Driver interface {
 	Configure(config Config) error                          // Takes a config map
 	ConfigSurvey(config Config, machineName string) error   // Interactive config generator
+	Init() 													// Initialization tasks (as drivers may be reused)
 	Out(query string, args []string) (<-chan Record, error) // outbound data
 	In(query string, args []string, record Record) error    // inbound data
 	Done() error                                            // finalization tasks when runner is done with In
