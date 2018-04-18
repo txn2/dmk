@@ -16,7 +16,7 @@ build:
   goarch:
     - amd64
 
-  ldflags: -s -w -X main.build={{.Version}} cli.Version={{.Version}}
+  ldflags: -s -w -X main.build={{.Version}} -X github.com/cjimti/dmk/cli.Version={{.Version}}
 
 # Archive customization
 archive:

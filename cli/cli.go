@@ -22,7 +22,7 @@ var appState struct {
 	Env       map[string]string
 }
 
-var Version = "Unknown"
+var Version = "0.0.0"
 
 // Cli is the DMK CLI
 // see http://github.com/desertbit/grumble
@@ -58,7 +58,7 @@ func init() {
 		fmt.Println(` |   \|     |  |  |`)
 		fmt.Println(` | |  | | | |    -|`)
 		fmt.Println(` |___/|_|_|_|__|__|`)
-		fmt.Println(`             ` + Version)
+		fmt.Println(`             v` + Version)
 		fmt.Println()
 		fmt.Println(` type "help" for cmds`)
 		fmt.Println(` type "ls p" for a list of projects`)
