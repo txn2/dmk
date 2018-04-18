@@ -15,8 +15,8 @@ import (
 	"github.com/cjimti/dmk/driver"
 	"github.com/cjimti/dmk/tunnel"
 	jsutils "github.com/cjimti/dmk/utils"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/mcuadros/go-candyjs"
+	"github.com/davecgh/go-spew/spew"
 )
 
 // A Runner runs a Migration consisting of a
@@ -192,12 +192,11 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	// see https://github.com/mcuadros/go-candyjs
 	ctx := candyjs.NewContext()
 	defer ctx.DestroyHeap()
+	r.addScriptFunctions(*ctx, machineName)
 
+	// add utils
 	utils := jsutils.Utils{}
-
 	ctx.PushGlobalStruct("utils", utils)
-
-	storage := make(map[string]interface{})
 
 	queryTemplate, err := template.New("query").Funcs(sprig.TxtFuncMap()).Parse(migration.DestinationQuery)
 	if err != nil {
@@ -207,6 +206,8 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	if r.Verbose {
 		fmt.Printf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)
 	}
+
+
 	// iterate over the sourceRecordChan for driver.Record objects
 	for record := range sourceRecordChan {
 
@@ -216,14 +217,6 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 		if script != "" {
 			skipRecord := false
 			endMigration := false
-
-			ctx.PushGlobalGoFunction("getStorage", func() *map[string]interface{} {
-				return &storage
-			})
-
-			ctx.PushGlobalGoFunction("sendStorage", func(s map[string]interface{}) {
-				storage = s
-			})
 
 			ctx.PushGlobalGoFunction("getRecord", func() driver.Record {
 				return record
@@ -243,40 +236,6 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 
 			ctx.PushGlobalGoFunction("end", func() {
 				endMigration = true
-			})
-
-			ctx.PushGlobalGoFunction("dump", func(obj interface{}) {
-				sd := spew.Sdump(obj)
-				fmt.Printf(">>> SCRIPT %s: %s\n", machineName, sd)
-			})
-
-			ctx.PushGlobalGoFunction("print", func(obj interface{}) {
-				fmt.Printf(">>> SCRIPT %s: %s\n", machineName, obj)
-			})
-
-			// recursive migration (sub query) mainly for used with
-			// migrations that migrate to a collector
-			ctx.PushGlobalGoFunction("run", func(machineNameFromScript string, argsFromScript []string) []driver.ResultCollectionItem {
-				runResult, err := r.Run(machineNameFromScript, argsFromScript)
-				if err != nil {
-					fmt.Printf("ERROR: %s\n", err.Error())
-				}
-
-				dd := *runResult.DestinationDriver
-
-				if cdd, ok := dd.(*driver.Collector); ok {
-					collection := cdd.GetCollection()
-					if r.Verbose {
-						fmt.Printf("Script will receive %d items from collector.\n", len(collection))
-					}
-
-					return collection
-				}
-
-				if r.Verbose {
-					fmt.Printf("WARNING: run() did not output to a collector.\n")
-				}
-				return []driver.ResultCollectionItem{}
 			})
 
 			ctx.EvalString(script)
@@ -318,4 +277,61 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	fmt.Printf("Done with migration %s\n", migration.Component.MachineName)
 
 	return runResult, nil
+}
+
+// addScriptFunctions add utility functions to script context
+func (r *Runner) addScriptFunctions(ctx candyjs.Context, machineName string) {
+
+	// memory storage
+	storage := make(map[string]interface{})
+
+	// recursive migration (sub query) mainly for used with
+	// migrations that migrate to a collector
+	ctx.PushGlobalGoFunction("run", r.scriptRunner())
+
+	ctx.PushGlobalGoFunction("getStorage", func() *map[string]interface{} {
+		return &storage
+	})
+
+	ctx.PushGlobalGoFunction("sendStorage", func(s map[string]interface{}) {
+		storage = s
+	})
+
+	ctx.PushGlobalGoFunction("dump", func(obj interface{}) {
+		sd := spew.Sdump(obj)
+		fmt.Printf(">>> SCRIPT %s: %s\n", machineName, sd)
+	})
+
+	ctx.PushGlobalGoFunction("print", func(obj interface{}) {
+		fmt.Printf(">>> SCRIPT %s: %s\n", machineName, obj)
+	})
+}
+
+// scriptRunner returns run function for script context
+func (r *Runner) scriptRunner() func(machineNameFromScript string, argsFromScript []string) []driver.ResultCollectionItem {
+
+	fn := func(machineNameFromScript string, argsFromScript []string) []driver.ResultCollectionItem {
+		runResult, err := r.Run(machineNameFromScript, argsFromScript)
+		if err != nil {
+			fmt.Printf("ERROR: %s\n", err.Error())
+		}
+
+		dd := *runResult.DestinationDriver
+
+		if cdd, ok := dd.(*driver.Collector); ok {
+			collection := cdd.GetCollection()
+			if r.Verbose {
+				fmt.Printf("Script will receive %d items from collector.\n", len(collection))
+			}
+
+			return collection
+		}
+
+		if r.Verbose {
+			fmt.Printf("WARNING: run() did not output to a collector.\n")
+		}
+		return []driver.ResultCollectionItem{}
+	};
+
+	return fn
 }

@@ -16,6 +16,8 @@ build:
   goarch:
     - amd64
 
+  ldflags: -s -w -X main.build={{.Version}} cli.Version={{.Version}}
+
 # Archive customization
 archive:
   # You can change the name of the archive.
