@@ -14,7 +14,6 @@ import (
 	"github.com/cjimti/dmk/cliutils"
 	"github.com/cjimti/dmk/driver"
 	"github.com/cjimti/dmk/migrate"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/desertbit/grumble"
 )
 
@@ -329,7 +328,6 @@ func createMigration() {
 		survey.AskOne(sourceQueryPrompt, &migration.SourceQuery, nil)
 	}
 
-	spew.Dump(sourceDbDriver)
 	foundReplacements = sourceDbDriver.ArgCount(migration.SourceQuery)
 	nArgsStr := ""
 	prompt = &survey.Input{

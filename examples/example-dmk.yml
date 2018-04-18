@@ -16,6 +16,17 @@ databases:
       clusterList: localhost:39042
       consistency: Quorum
       keyspace: example
+  example_args:
+    component:
+      kind: Database
+      name: Example Args
+      machineName: example_args
+      description: Arguments to load example data.
+    driver: argset
+    tunnel: ""
+    configuration:
+      args:
+      - System
   example_csv_data:
     component:
       kind: Database
@@ -26,19 +37,16 @@ databases:
     tunnel: ""
     configuration:
       filePath: ./dev/example.csv
-  fun_args:
+  example_data_migration_collector:
     component:
       kind: Database
-      name: Fun Args
-      machineName: fun_args
-      description: Funwith arguments.
-    driver: argset
+      name: Example Data Migration Collector
+      machineName: example_data_migration_collector
+      description: Collect the results of the sample migration.
+    driver: collector
     tunnel: ""
     configuration:
-      args:
-      - Limit
-      - Person
-      - Age
+      collectionKey: example_data_migration_collector
   mysql_dev:
     component:
       kind: Database
@@ -242,16 +250,17 @@ migrations:
       INSERT INTO migration_data JSON '{"id": {{.id}}, "name": "{{.name}}"}'
     destinationQueryNArgs: 0
     transformationScript: ""
-  fun:
+  sample_migration:
     component:
       kind: Migration
-      name: fun
-      machineName: fun
-      description: fun migration
-    sourceDb: fun_args
-    destinationDb: run_collector
+      name: Sample Migration
+      machineName: sample_migration
+      description: Scripted run of example_csv_to_cassandra, cassandra_to_cassandra_by_name,
+        cassnadra_to_cassandra_name_lookup and cassandra_to_cassandra_using_collector.
+    sourceDb: example_args
+    destinationDb: example_data_migration_collector
     sourceQuery: ""
-    sourceQueryNArgs: 3
+    sourceQueryNArgs: 1
     sourceCountQuery: ""
     destinationQuery: ""
     destinationQueryNArgs: 0
@@ -259,6 +268,9 @@ migrations:
       // Get the current record.
       var rec = getRecord();
 
-      dump(rec)
+      run("example_csv_to_cassandra", []);
+      run("cassandra_to_cassandra_by_name", [rec.System]);
+      run("cassnadra_to_cassandra_name_lookup", [rec.System]);
+      run("cassandra_to_cassandra_using_collector", [rec.System]);
 
 tunnels: {}
