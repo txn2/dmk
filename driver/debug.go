@@ -9,6 +9,12 @@ type Debug struct {
 	config Config
 }
 
+// ArgCount calculate the number of expected arguments for
+// a specified query with this driver.
+func (d *Debug) ArgCount(query string) int {
+	return 0
+}
+
 // Init initializes at the beginning of each run.
 func (d *Debug) Init() {
 

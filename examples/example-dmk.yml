@@ -26,6 +26,19 @@ databases:
     tunnel: ""
     configuration:
       filePath: ./dev/example.csv
+  fun_args:
+    component:
+      kind: Database
+      name: Fun Args
+      machineName: fun_args
+      description: Funwith arguments.
+    driver: argset
+    tunnel: ""
+    configuration:
+      args:
+      - Limit
+      - Person
+      - Age
   mysql_dev:
     component:
       kind: Database
@@ -51,6 +64,16 @@ databases:
     tunnel: ""
     configuration:
       collectionKey: names_collector
+  run_collector:
+    component:
+      kind: Database
+      name: Run Collector
+      machineName: run_collector
+      description: Collects an argset run.
+    driver: collector
+    tunnel: ""
+    configuration:
+      collectionKey: run_collector
 migrations:
   cassandra_to_cassandra_by_name:
     component:
@@ -110,7 +133,6 @@ migrations:
 
       sendRecord(rec);
       sendArgs([rec.system, rec.name]);
-
   cassnadra_to_cassandra_name_lookup:
     component:
       kind: Migration
@@ -220,4 +242,23 @@ migrations:
       INSERT INTO migration_data JSON '{"id": {{.id}}, "name": "{{.name}}"}'
     destinationQueryNArgs: 0
     transformationScript: ""
+  fun:
+    component:
+      kind: Migration
+      name: fun
+      machineName: fun
+      description: fun migration
+    sourceDb: fun_args
+    destinationDb: run_collector
+    sourceQuery: ""
+    sourceQueryNArgs: 3
+    sourceCountQuery: ""
+    destinationQuery: ""
+    destinationQueryNArgs: 0
+    transformationScript: |
+      // Get the current record.
+      var rec = getRecord();
+
+      dump(rec)
+
 tunnels: {}

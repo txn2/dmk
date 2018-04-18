@@ -44,13 +44,14 @@ type DataMap interface {
 type Driver interface {
 	Configure(config Config) error                          // Takes a config map
 	ConfigSurvey(config Config, machineName string) error   // Interactive config generator
-	Init() 													// Initialization tasks (as drivers may be reused)
+	Init()                                                  // Initialization tasks (as drivers may be reused)
 	Out(query string, args []string) (<-chan Record, error) // outbound data
 	In(query string, args []string, record Record) error    // inbound data
 	Done() error                                            // finalization tasks when runner is done with In
 	// ExpectedOut is the number of records we expect
 	// from the source, some drivers can determine
 	// expected output without a source query
+	ArgCount(query string) int       // returns the number of expected args for a query
 	ExpectedOut() (bool, int, error) // a false return means indefinite
 	HasOutQuery() bool               // does this driver use a query to get data
 	HasInQuery() bool                // does this driver use a query to set data

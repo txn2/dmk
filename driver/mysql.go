@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/AlecAivazis/survey"
 	_ "github.com/go-sql-driver/mysql" // driver import
@@ -18,6 +19,12 @@ type MySql struct {
 // Init initializes at the beginning of each run.
 func (m *MySql) Init() {
 
+}
+
+// ArgCount calculate the numer of expected arguments for
+// a specified query with this driver.
+func (m *MySql) ArgCount(query string) int {
+	return strings.Count(query, "?")
 }
 
 // HasOutQuery is true for MySql

@@ -7,8 +7,6 @@ import (
 
 	"math/rand"
 
-	"strings"
-
 	"errors"
 
 	"github.com/AlecAivazis/survey"
@@ -16,6 +14,7 @@ import (
 	"github.com/cjimti/dmk/cliutils"
 	"github.com/cjimti/dmk/driver"
 	"github.com/cjimti/dmk/migrate"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/desertbit/grumble"
 )
 
@@ -306,12 +305,16 @@ func createMigration() {
 		Value:   &migration.SourceDb,
 	})
 
-	sourceDbDriverType := appState.Project.Databases[migration.SourceDb].Driver
+	sdb := appState.Project.Databases[migration.SourceDb]
+	sourceDbDriverType := sdb.Driver
+	sourceDbDriverCfg := sdb.Configuration
 	sourceDbDriver, err := DriverManager.GetNewDriver(sourceDbDriverType)
 	if err != nil {
 		Cli.PrintError(err)
 		return
 	}
+
+	sourceDbDriver.Configure(sourceDbDriverCfg)
 
 	foundReplacements := 0
 
@@ -324,31 +327,25 @@ func createMigration() {
 			// todo: get query examples help from driver
 		}
 		survey.AskOne(sourceQueryPrompt, &migration.SourceQuery, nil)
-
-		foundReplacements = strings.Count(migration.SourceQuery, "?")
-
-		if foundReplacements > 0 {
-			fmt.Printf(">>> Found %[1]d '?' characters. Assuming query requires %[1]d args. <<<\n", foundReplacements)
-		}
-		fmt.Printf("Source Query:\n\t%s\n", migration.SourceQuery)
-
-		nArgsStr := ""
-		prompt = &survey.Input{
-			Message: "Number of Required Arguments (0 for none):",
-			Help:    "Ex: `The number of ordered arguments to pass to the query.`",
-			Default: fmt.Sprintf("%d", foundReplacements),
-		}
-		survey.AskOne(prompt, &nArgsStr, func(ans interface{}) error {
-			nArgs, err := strconv.Atoi(ans.(string))
-			if err != nil {
-				return errors.New("value must be an integer")
-			}
-
-			migration.SourceQueryNArgs = nArgs
-			return nil
-		})
-
 	}
+
+	spew.Dump(sourceDbDriver)
+	foundReplacements = sourceDbDriver.ArgCount(migration.SourceQuery)
+	nArgsStr := ""
+	prompt = &survey.Input{
+		Message: "Number of Required Arguments (0 for none):",
+		Help:    "Ex: `The number of ordered arguments to pass to the query.`",
+		Default: fmt.Sprintf("%d", foundReplacements),
+	}
+	survey.AskOne(prompt, &nArgsStr, func(ans interface{}) error {
+		nArgs, err := strconv.Atoi(ans.(string))
+		if err != nil {
+			return errors.New("value must be an integer")
+		}
+
+		migration.SourceQueryNArgs = nArgs
+		return nil
+	})
 
 	// does the selected driver use a count query?
 	if sourceDbDriver.HasCountQuery() {

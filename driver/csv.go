@@ -16,6 +16,12 @@ type CSV struct {
 	config Config
 }
 
+// ArgCount calculate the number of expected arguments for
+// a specified query with this driver.
+func (c *CSV) ArgCount(query string) int {
+	return 0
+}
+
 // Init initializes at the beginning of each run.
 func (c *CSV) Init() {
 

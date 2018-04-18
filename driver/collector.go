@@ -26,6 +26,12 @@ type Collector struct {
 	init          bool
 }
 
+// ArgCount calculate the number of expected arguments for
+// a specified query with this driver.
+func (c *Collector) ArgCount(query string) int {
+	return 0
+}
+
 // Init initializes at the beginning of each run.
 func (c *Collector) Init() {
 	c.store = nil

@@ -31,6 +31,12 @@ type Cassandra struct {
 	config  Config
 }
 
+// ArgCount calculate the number of expected arguments for
+// a specified query with this driver.
+func (c *Cassandra) ArgCount(query string) int {
+	return strings.Count(query, "?")
+}
+
 // Init initializes at the beginning of each run.
 func (c *Cassandra) Init() {
 

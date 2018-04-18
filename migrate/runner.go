@@ -15,8 +15,8 @@ import (
 	"github.com/cjimti/dmk/driver"
 	"github.com/cjimti/dmk/tunnel"
 	jsutils "github.com/cjimti/dmk/utils"
-	"github.com/mcuadros/go-candyjs"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/mcuadros/go-candyjs"
 )
 
 // A Runner runs a Migration consisting of a
@@ -39,7 +39,7 @@ type Runner struct {
 	TunnelManager tunnel.Manager
 	DryRun        bool
 	Verbose       bool
-	drivers  	  map[string]driver.Driver // store configured drivers
+	drivers       map[string]driver.Driver // store configured drivers
 }
 
 // configureDriver configures a driver for the migration and database. The configured
@@ -48,7 +48,7 @@ func (r *Runner) configureDriver(migration string, db cfg.Database) (driver.Driv
 	key := migration + "_" + db.Component.MachineName
 
 	if r.drivers == nil {
-		r.drivers = make(map[string]driver.Driver,0)
+		r.drivers = make(map[string]driver.Driver, 0)
 	}
 
 	// do we have a configured driver for this migration and database?
@@ -143,7 +143,6 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	// set a pointer to the source driver in the run result
 	runResult.SourceDriver = &sourceDriver
 
-
 	if r.Verbose {
 		fmt.Printf("%s source query expects %d args.\n", machineName, migration.SourceQueryNArgs)
 		fmt.Printf("%s received %d args.\n", machineName, len(sourceArgs))
@@ -206,7 +205,6 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	if r.Verbose {
 		fmt.Printf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)
 	}
-
 
 	// iterate over the sourceRecordChan for driver.Record objects
 	for record := range sourceRecordChan {
@@ -321,7 +319,7 @@ func (r *Runner) scriptRunner() func(machineNameFromScript string, argsFromScrip
 		if cdd, ok := dd.(*driver.Collector); ok {
 			collection := cdd.GetCollection()
 			if r.Verbose {
-				fmt.Printf("Script will receive %d items from collector.\n", len(collection))
+				fmt.Printf("Argset will receive %d items from collector.\n", len(collection))
 			}
 
 			return collection
@@ -331,7 +329,7 @@ func (r *Runner) scriptRunner() func(machineNameFromScript string, argsFromScrip
 			fmt.Printf("WARNING: run() did not output to a collector.\n")
 		}
 		return []driver.ResultCollectionItem{}
-	};
+	}
 
 	return fn
 }
