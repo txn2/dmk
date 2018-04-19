@@ -24,6 +24,11 @@
 			"Rev": "3391d3790d23d03408670993e957e8f408993c34"
 		},
 		{
+			"ImportPath": "github.com/boltdb/bolt",
+			"Comment": "v1.3.1-5-gfd01fc7",
+			"Rev": "fd01fc79c553a8e99d512a07e8e0c63d4a3ccfc5"
+		},
+		{
 			"ImportPath": "github.com/chzyer/readline",
 			"Comment": "v1.4-38-gf6d7a1f",
 			"Rev": "f6d7a1f6fbf35bbf9beb80dc63c56a29dcfb759f"
