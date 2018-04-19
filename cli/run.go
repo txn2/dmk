@@ -44,6 +44,7 @@ func runMigration(machineName string, f grumble.FlagMap, args []string) {
 		Project:       appState.Project,
 		DriverManager: DriverManager,
 		TunnelManager: TunnelManager,
+		Path:          appState.Directory,
 		DryRun:        f.Bool("dry-run"),
 		Verbose:       f.Bool("verbose"),
 	}

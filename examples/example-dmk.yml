@@ -103,6 +103,10 @@ migrations:
       var rec = getRecord();
       print("processing id: " + rec.id);
       sendArgs([rec.system, rec.name, rec.id.toString(), rec.description]);
+
+      var v = persistVal(getMigration(), rec.id.toString(), getUuid());
+      print("GOT PERSIST VAL: [" + v + "]");
+
   cassandra_to_cassandra_using_collector:
     component:
       kind: Migration
@@ -197,6 +201,9 @@ migrations:
       // Get the current record.
       var rec = getRecord();
 
+      //var v = utils.ValMap(rec.name,);
+      // print("ValMap: " +  utils.GetUuidString());
+
       if (rec.id < 3) {
         // Print a generic message.
         print("Im Javascript inside the DMK!");
@@ -211,7 +218,7 @@ migrations:
         // Send the record back to DMK
         sendRecord(rec);
 
-        // Get a persistant data store (hash map)
+        // Get temp data store, hash map good for the life of the migration.
         var storage = getStorage();
 
         // Initilize a key in the store if it does not exist.

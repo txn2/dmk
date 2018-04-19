@@ -11,12 +11,13 @@ import (
 	"strings"
 
 	"github.com/Masterminds/sprig"
+	"github.com/boltdb/bolt"
 	"github.com/cjimti/dmk/cfg"
 	"github.com/cjimti/dmk/driver"
 	"github.com/cjimti/dmk/tunnel"
-	jsutils "github.com/cjimti/dmk/utils"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/mcuadros/go-candyjs"
+	"github.com/satori/go.uuid"
 )
 
 // A Runner runs a Migration consisting of a
@@ -39,7 +40,31 @@ type Runner struct {
 	TunnelManager tunnel.Manager
 	DryRun        bool
 	Verbose       bool
+	Path          string                   // relative path to config
 	drivers       map[string]driver.Driver // store configured drivers
+	localDbs      map[string]*bolt.DB      // local bold databases for value mapping
+}
+
+// getLocalDb gets the database
+func (r *Runner) getLocalDb(migration string) (*bolt.DB, error) {
+	// one database per migration (to avoid dealing with multiple writers)
+	dbFile := r.Path + r.Project.Component.MachineName + "-" + migration + ".db"
+
+	if db, ok := r.localDbs[dbFile]; ok {
+		return db, nil
+	}
+
+	db, err := bolt.Open(dbFile, 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		return nil, err
+	}
+
+	if r.localDbs == nil {
+		r.localDbs = make(map[string]*bolt.DB, 1)
+	}
+	r.localDbs[dbFile] = db
+
+	return db, nil
 }
 
 // configureDriver configures a driver for the migration and database. The configured
@@ -193,10 +218,6 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	defer ctx.DestroyHeap()
 	r.addScriptFunctions(*ctx, machineName)
 
-	// add utils
-	utils := jsutils.Utils{}
-	ctx.PushGlobalStruct("utils", utils)
-
 	queryTemplate, err := template.New("query").Funcs(sprig.TxtFuncMap()).Parse(migration.DestinationQuery)
 	if err != nil {
 		panic(err)
@@ -285,7 +306,18 @@ func (r *Runner) addScriptFunctions(ctx candyjs.Context, machineName string) {
 
 	// recursive migration (sub query) mainly for used with
 	// migrations that migrate to a collector
-	ctx.PushGlobalGoFunction("run", r.scriptRunner())
+	ctx.PushGlobalGoFunction("run", r.scriptRunner)
+
+	// persistent storage for value maps
+	ctx.PushGlobalGoFunction("persistVal", r.persistVal)
+
+	ctx.PushGlobalGoFunction("getMigration", func() string {
+		return machineName
+	})
+
+	ctx.PushGlobalGoFunction("getUuid", func() string {
+		return uuid.NewV4().String()
+	})
 
 	ctx.PushGlobalGoFunction("getStorage", func() *map[string]interface{} {
 		return &storage
@@ -305,31 +337,84 @@ func (r *Runner) addScriptFunctions(ctx candyjs.Context, machineName string) {
 	})
 }
 
-// scriptRunner returns run function for script context
-func (r *Runner) scriptRunner() func(machineNameFromScript string, argsFromScript []string) []driver.ResultCollectionItem {
+// persistVal gets or stores a fallback value
+func (r *Runner) persistVal(migration string, k string, fallback string) string {
+	db, err := r.getLocalDb(migration)
+	if err != nil {
+		fmt.Printf("LOCAL DB ERROR: %s", err.Error())
+		return ""
+	}
+	var retVal []byte
 
-	fn := func(machineNameFromScript string, argsFromScript []string) []driver.ResultCollectionItem {
-		runResult, err := r.Run(machineNameFromScript, argsFromScript)
-		if err != nil {
-			fmt.Printf("ERROR: %s\n", err.Error())
+	bucket := "persistVal"
+
+	found := false
+
+	// ensure that we have a bucket
+	ensureBucket(db, bucket)
+
+	db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bucket))
+		v := b.Get([]byte(k))
+
+		if v != nil {
+			retVal = make([]byte, len(v))
+			copy(retVal, v)
+			found = true
+			return nil
 		}
 
-		dd := *runResult.DestinationDriver
+		return nil
+	})
 
-		if cdd, ok := dd.(*driver.Collector); ok {
-			collection := cdd.GetCollection()
-			if r.Verbose {
-				fmt.Printf("Argset will receive %d items from collector.\n", len(collection))
-			}
-
-			return collection
-		}
-
-		if r.Verbose {
-			fmt.Printf("WARNING: run() did not output to a collector.\n")
-		}
-		return []driver.ResultCollectionItem{}
+	if found == true {
+		return string(retVal)
 	}
 
-	return fn
+	go func() {
+		db.Update(func(tx *bolt.Tx) error {
+			b := tx.Bucket([]byte(bucket))
+			err := b.Put([]byte(k), []byte(fallback))
+			return err
+		})
+	}()
+
+	return fallback
+}
+
+// scriptRunner returns run function for script context
+func (r *Runner) scriptRunner(machineNameFromScript string, argsFromScript []string) []driver.ResultCollectionItem {
+	runResult, err := r.Run(machineNameFromScript, argsFromScript)
+	if err != nil {
+		fmt.Printf("ERROR: %s\n", err.Error())
+	}
+
+	dd := *runResult.DestinationDriver
+
+	if cdd, ok := dd.(*driver.Collector); ok {
+		collection := cdd.GetCollection()
+		if r.Verbose {
+			fmt.Printf("Argset will receive %d items from collector.\n", len(collection))
+		}
+
+		return collection
+	}
+
+	if r.Verbose {
+		fmt.Printf("WARNING: run() for %s executed from a script but did not output to a collector.\n", machineNameFromScript)
+	}
+	return []driver.ResultCollectionItem{}
+}
+
+// ensureBucket makes a bucket if one does not exist
+func ensureBucket(db *bolt.DB, bucket string) error {
+	err := db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte(bucket))
+		if err != nil {
+			return fmt.Errorf("create bucket: %s", err)
+		}
+		return nil
+	})
+
+	return err
 }
