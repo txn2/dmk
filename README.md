@@ -19,7 +19,7 @@ On MacOS with [brew]() installed.
 
 **Run:**
 ```bash
-brew tap cjimti/homebrew-tap
+brew tap txn2/homebrew-tap
 brew install dmk
 ```
 

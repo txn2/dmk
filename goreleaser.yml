@@ -53,7 +53,7 @@ brew:
   name: dmk
 
   github:
-    owner: cjimti
+    owner: txn2
     name: homebrew-tap
 
   commit_author:
