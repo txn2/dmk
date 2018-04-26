@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey"
-	"github.com/cjimti/dmk/migrate"
+	"github.com/txn2/dmk/migrate"
 	"github.com/desertbit/grumble"
 )
 

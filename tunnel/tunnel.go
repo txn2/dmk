@@ -6,7 +6,7 @@ import (
 	"net"
 	"os"
 
-	"github.com/cjimti/dmk/cfg"
+	"github.com/txn2/dmk/cfg"
 	"github.com/davecgh/go-spew/spew"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"

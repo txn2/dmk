@@ -3,9 +3,9 @@ package migrate
 import (
 	"io/ioutil"
 
-	"github.com/cjimti/dmk/cfg"
-	"github.com/cjimti/dmk/driver"
-	"github.com/cjimti/dmk/tunnel"
+	"github.com/txn2/dmk/cfg"
+	"github.com/txn2/dmk/driver"
+	"github.com/txn2/dmk/tunnel"
 	"gopkg.in/yaml.v2"
 )
 

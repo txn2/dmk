@@ -12,9 +12,9 @@ import (
 
 	"github.com/Masterminds/sprig"
 	"github.com/boltdb/bolt"
-	"github.com/cjimti/dmk/cfg"
-	"github.com/cjimti/dmk/driver"
-	"github.com/cjimti/dmk/tunnel"
+	"github.com/txn2/dmk/cfg"
+	"github.com/txn2/dmk/driver"
+	"github.com/txn2/dmk/tunnel"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/mcuadros/go-candyjs"
 	"github.com/satori/go.uuid"

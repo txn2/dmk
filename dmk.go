@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/cjimti/dmk/cli"
+	"github.com/txn2/dmk/cli"
 	"github.com/desertbit/grumble"
 )
 

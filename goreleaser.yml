@@ -16,7 +16,7 @@ build:
   goarch:
     - amd64
 
-  ldflags: -s -w -X main.build={{.Version}} -X github.com/cjimti/dmk/cli.Version={{.Version}}
+  ldflags: -s -w -X main.build={{.Version}} -X github.com/txn2/dmk/cli.Version={{.Version}}
 
 # Archive customization
 archive:
@@ -62,7 +62,7 @@ brew:
 
   folder: Formula
 
-  homepage: https://github.com/cjimti/dmk
+  homepage: https://github.com/txn2/dmk
 
   description: "Declarative data migration in yaml (with embedded javascript support.)"
 

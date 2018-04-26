@@ -5,8 +5,8 @@ import (
 
 	"os"
 
-	"github.com/cjimti/dmk/cfg"
-	"github.com/cjimti/dmk/migrate"
+	"github.com/txn2/dmk/cfg"
+	"github.com/txn2/dmk/migrate"
 	"github.com/desertbit/grumble"
 	"github.com/olekukonko/tablewriter"
 )

@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/cjimti/dmk",
+	"ImportPath": "github.com/txn2/dmk",
 	"GoVersion": "go1.10",
 	"GodepVersion": "v80",
 	"Deps": [
