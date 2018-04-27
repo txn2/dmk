@@ -12,12 +12,12 @@ import (
 
 	"github.com/Masterminds/sprig"
 	"github.com/boltdb/bolt"
-	"github.com/txn2/dmk/cfg"
-	"github.com/txn2/dmk/driver"
-	"github.com/txn2/dmk/tunnel"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/mcuadros/go-candyjs"
 	"github.com/satori/go.uuid"
+	"github.com/txn2/dmk/cfg"
+	"github.com/txn2/dmk/driver"
+	"github.com/txn2/dmk/tunnel"
 )
 
 // A Runner runs a Migration consisting of a
@@ -43,6 +43,14 @@ type Runner struct {
 	Path          string                   // relative path to config
 	drivers       map[string]driver.Driver // store configured drivers
 	localDbs      map[string]*bolt.DB      // local bold databases for value mapping
+}
+
+// RunResult is returned by the Run method
+type RunResult struct {
+	MachineName       string
+	SourceArgs        []string
+	DestinationDriver *driver.Driver
+	SourceDriver      *driver.Driver
 }
 
 // getLocalDb gets the database
@@ -119,14 +127,6 @@ func (r *Runner) tunnel(database cfg.Database) error {
 	}
 
 	return nil
-}
-
-// RunResult is returned by the Run method
-type RunResult struct {
-	MachineName       string
-	SourceArgs        []string
-	DestinationDriver *driver.Driver
-	SourceDriver      *driver.Driver
 }
 
 // Run runs a migration
