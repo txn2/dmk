@@ -33,16 +33,14 @@ import (
 // 2) Each source result becomes transformed data (map[string]interface) and is then used as arguments along with
 // a query against the destination database.
 
-// Runner runs migrations.
-type Runner struct {
+// Runner runs migrations for a project.
+type RunnerCfg struct {
 	Project       Project
 	DriverManager *driver.Manager
 	TunnelManager tunnel.Manager
 	DryRun        bool
 	Verbose       bool
-	Path          string                   // relative path to config
-	drivers       map[string]driver.Driver // store configured drivers
-	localDbs      map[string]*bolt.DB      // local bold databases for value mapping
+	Path          string // relative path to config
 }
 
 // RunResult is returned by the Run method
@@ -53,10 +51,26 @@ type RunResult struct {
 	SourceDriver      *driver.Driver
 }
 
+// runner runs migrations for a project with the Run method.
+type runner struct {
+	cfg      RunnerCfg
+	drivers  map[string]driver.Driver // store configured drivers
+	localDbs map[string]*bolt.DB      // local bold databases for value mapping
+}
+
+// NewRunner configures and returns a new runner
+func NewRunner(cfg RunnerCfg) *runner {
+	runner := &runner{
+		cfg: cfg,
+	}
+
+	return runner
+}
+
 // getLocalDb gets the database
-func (r *Runner) getLocalDb(migration string) (*bolt.DB, error) {
+func (r *runner) getLocalDb(migration string) (*bolt.DB, error) {
 	// one database per migration (to avoid dealing with multiple writers)
-	dbFile := r.Path + r.Project.Component.MachineName + "-" + migration + ".db"
+	dbFile := r.cfg.Path + r.cfg.Project.Component.MachineName + "-" + migration + ".db"
 
 	if db, ok := r.localDbs[dbFile]; ok {
 		return db, nil
@@ -77,7 +91,7 @@ func (r *Runner) getLocalDb(migration string) (*bolt.DB, error) {
 
 // configureDriver configures a driver for the migration and database. The configured
 // drivers is stored in the event it needs to be re-used in a sub migration.
-func (r *Runner) configureDriver(migration string, db cfg.Database) (driver.Driver, error) {
+func (r *runner) configureDriver(migration string, db cfg.Database) (driver.Driver, error) {
 	key := migration + "_" + db.Component.MachineName
 
 	if r.drivers == nil {
@@ -91,7 +105,7 @@ func (r *Runner) configureDriver(migration string, db cfg.Database) (driver.Driv
 	}
 
 	// get a driver of the specified type
-	d, err := r.DriverManager.GetNewDriver(db.Driver)
+	d, err := r.cfg.DriverManager.GetNewDriver(db.Driver)
 	if err != nil {
 		return nil, err
 	}
@@ -110,11 +124,11 @@ func (r *Runner) configureDriver(migration string, db cfg.Database) (driver.Driv
 }
 
 // tunnel if needed
-func (r *Runner) tunnel(database cfg.Database) error {
+func (r *runner) tunnel(database cfg.Database) error {
 	// setup a tunnel if needed
 	if database.Tunnel != "" {
-		if tunnelCfg, ok := r.Project.Tunnels[database.Tunnel]; ok {
-			err := r.TunnelManager.Tunnel(tunnelCfg)
+		if tunnelCfg, ok := r.cfg.Project.Tunnels[database.Tunnel]; ok {
+			err := r.cfg.TunnelManager.Tunnel(tunnelCfg)
 			if err != nil {
 				return err
 			}
@@ -130,7 +144,8 @@ func (r *Runner) tunnel(database cfg.Database) error {
 }
 
 // Run runs a migration
-func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error) {
+func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error) {
+
 	runResult := &RunResult{
 		MachineName: machineName,
 		SourceArgs:  sourceArgs,
@@ -138,18 +153,18 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 
 	fmt.Println("Running Migration: " + machineName)
 
-	if r.DryRun {
+	if r.cfg.DryRun {
 		fmt.Printf("\n>> This is a DRY RUN. No data will be migrated. <<\n\n")
 	}
 
 	// get the migration
-	migration, ok := r.Project.Migrations[machineName]
+	migration, ok := r.cfg.Project.Migrations[machineName]
 	if ok != true {
 		return runResult, errors.New("no migration found for " + machineName)
 	}
 
 	// get the source db
-	sourceDb, ok := r.Project.Databases[migration.SourceDb]
+	sourceDb, ok := r.cfg.Project.Databases[migration.SourceDb]
 	if ok != true {
 		return runResult, errors.New("no source database found for " + migration.SourceDb)
 	}
@@ -168,7 +183,7 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	// set a pointer to the source driver in the run result
 	runResult.SourceDriver = &sourceDriver
 
-	if r.Verbose {
+	if r.cfg.Verbose {
 		fmt.Printf("%s source query expects %d args.\n", machineName, migration.SourceQueryNArgs)
 		fmt.Printf("%s received %d args.\n", machineName, len(sourceArgs))
 	}
@@ -179,7 +194,7 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 
 	// Source data collection.
 	// do we have the requested number of args
-	if r.Verbose {
+	if r.cfg.Verbose {
 		fmt.Printf("Migration %s Source Query: %s\n", machineName, strings.Trim(migration.SourceQuery, "\n"))
 		fmt.Printf("Migration %s Source Args: %s\n", machineName, sourceArgs)
 	}
@@ -189,16 +204,16 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	}
 
 	// get the destination db
-	if r.Verbose {
+	if r.cfg.Verbose {
 		fmt.Printf("Migration DestinationDb: %s\n", migration.DestinationDb)
 	}
-	destinationDb, ok := r.Project.Databases[migration.DestinationDb]
+	destinationDb, ok := r.cfg.Project.Databases[migration.DestinationDb]
 	if ok != true {
 		return runResult, errors.New("no destination database found for " + migration.DestinationDb)
 	}
 
 	// get the destination driver
-	if r.Verbose {
+	if r.cfg.Verbose {
 		fmt.Printf("Migration Driver: %s\n", destinationDb.Driver)
 	}
 
@@ -223,7 +238,7 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 		panic(err)
 	}
 
-	if r.Verbose {
+	if r.cfg.Verbose {
 		fmt.Printf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)
 	}
 
@@ -270,7 +285,7 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 			}
 		}
 
-		if r.DryRun {
+		if r.cfg.DryRun {
 			continue
 		}
 
@@ -280,7 +295,7 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 			return runResult, err
 		}
 
-		if r.Verbose {
+		if r.cfg.Verbose {
 			fmt.Printf("Migration %s Destination Query: %s\n", machineName, strings.Trim(query.String(), "\n"))
 			fmt.Printf("Migration %s Destination Args: %s\n", machineName, args)
 		}
@@ -299,7 +314,7 @@ func (r *Runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 }
 
 // addScriptFunctions add utility functions to script context
-func (r *Runner) addScriptFunctions(ctx candyjs.Context, machineName string) {
+func (r *runner) addScriptFunctions(ctx candyjs.Context, machineName string) {
 
 	// memory storage
 	storage := make(map[string]interface{})
@@ -338,7 +353,7 @@ func (r *Runner) addScriptFunctions(ctx candyjs.Context, machineName string) {
 }
 
 // persistVal gets or stores a fallback value
-func (r *Runner) persistVal(migration string, k string, fallback string) string {
+func (r *runner) persistVal(migration string, k string, fallback string) string {
 	db, err := r.getLocalDb(migration)
 	if err != nil {
 		fmt.Printf("LOCAL DB ERROR: %s", err.Error())
@@ -383,7 +398,7 @@ func (r *Runner) persistVal(migration string, k string, fallback string) string 
 }
 
 // scriptRunner returns run function for script context
-func (r *Runner) scriptRunner(machineNameFromScript string, argsFromScript []string) []driver.ResultCollectionItem {
+func (r *runner) scriptRunner(machineNameFromScript string, argsFromScript []string) []driver.ResultCollectionItem {
 	runResult, err := r.Run(machineNameFromScript, argsFromScript)
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err.Error())
@@ -393,14 +408,14 @@ func (r *Runner) scriptRunner(machineNameFromScript string, argsFromScript []str
 
 	if cdd, ok := dd.(*driver.Collector); ok {
 		collection := cdd.GetCollection()
-		if r.Verbose {
+		if r.cfg.Verbose {
 			fmt.Printf("Argset will receive %d items from collector.\n", len(collection))
 		}
 
 		return collection
 	}
 
-	if r.Verbose {
+	if r.cfg.Verbose {
 		fmt.Printf("WARNING: run() for %s executed from a script but did not output to a collector.\n", machineNameFromScript)
 	}
 	return []driver.ResultCollectionItem{}
