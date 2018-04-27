@@ -49,6 +49,9 @@ type RunResult struct {
 	SourceArgs        []string
 	DestinationDriver *driver.Driver
 	SourceDriver      *driver.Driver
+	Done              chan bool
+	Error             chan error
+	Status            chan string
 }
 
 // runner runs migrations for a project with the Run method.
@@ -144,82 +147,99 @@ func (r *runner) tunnel(database cfg.Database) error {
 }
 
 // Run runs a migration
-func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error) {
+func (r *runner) RunAsync(machineName string, sourceArgs []string) (*RunResult, error) {
+	doneChan := make(chan bool, 0)
+	errorChan := make(chan error, 0)
+	statusChan := make(chan string, 0)
 
 	runResult := &RunResult{
 		MachineName: machineName,
 		SourceArgs:  sourceArgs,
+		Done:        doneChan,
+		Error:       errorChan,
+		Status:      statusChan,
 	}
 
-	fmt.Println("Running Migration: " + machineName)
+	go r.run(runResult)
+
+	return runResult, nil
+}
+
+// run a migration (see RunAsync)
+func (r *runner) run(runResult *RunResult) {
+	machineName := runResult.MachineName
+	sourceArgs := runResult.SourceArgs
+
+	runResult.Status <- fmt.Sprintln("Running Migration: " + machineName)
 
 	if r.cfg.DryRun {
-		fmt.Printf("\n>> This is a DRY RUN. No data will be migrated. <<\n\n")
+		runResult.Status <- fmt.Sprintf("\n>> This is a DRY RUN. No data will be migrated. <<\n\n")
 	}
 
 	// get the migration
 	migration, ok := r.cfg.Project.Migrations[machineName]
 	if ok != true {
-		return runResult, errors.New("no migration found for " + machineName)
+		runResult.Error <- errors.New("no migration found for " + machineName)
+		return
 	}
 
 	// get the source db
 	sourceDb, ok := r.cfg.Project.Databases[migration.SourceDb]
 	if ok != true {
-		return runResult, errors.New("no source database found for " + migration.SourceDb)
+		runResult.Error <- errors.New("no source database found for " + migration.SourceDb)
+		return
 	}
 
 	err := r.tunnel(sourceDb)
 	if err != nil {
-		return runResult, errors.New("unable to tunnel for " + sourceDb.Component.Name)
+		runResult.Error <- errors.New("unable to tunnel for " + sourceDb.Component.Name)
+		return
 	}
 
 	// get a driver for the source of migration
 	sourceDriver, err := r.configureDriver(machineName, sourceDb)
 	if err != nil {
-		return runResult, err
+		runResult.Error <- err
+		return
 	}
 
 	// set a pointer to the source driver in the run result
 	runResult.SourceDriver = &sourceDriver
 
-	if r.cfg.Verbose {
-		fmt.Printf("%s source query expects %d args.\n", machineName, migration.SourceQueryNArgs)
-		fmt.Printf("%s received %d args.\n", machineName, len(sourceArgs))
-	}
+	runResult.Status <- fmt.Sprintf("%s source query expects %d args.\n", machineName, migration.SourceQueryNArgs)
+	runResult.Status <- fmt.Sprintf("%s received %d args.\n", machineName, len(sourceArgs))
 
 	if migration.SourceQueryNArgs != len(sourceArgs) {
-		return runResult, fmt.Errorf("expecting %d args and got %d", migration.SourceQueryNArgs, len(sourceArgs))
+		runResult.Error <- fmt.Errorf("expecting %d args and got %d", migration.SourceQueryNArgs, len(sourceArgs))
+		return
 	}
 
 	// Source data collection.
 	// do we have the requested number of args
-	if r.cfg.Verbose {
-		fmt.Printf("Migration %s Source Query: %s\n", machineName, strings.Trim(migration.SourceQuery, "\n"))
-		fmt.Printf("Migration %s Source Args: %s\n", machineName, sourceArgs)
-	}
+	runResult.Status <- fmt.Sprintf("Migration %s Source Query: %s\n", machineName, strings.Trim(migration.SourceQuery, "\n"))
+	runResult.Status <- fmt.Sprintf("Migration %s Source Args: %s\n", machineName, sourceArgs)
+
 	sourceRecordChan, err := sourceDriver.Out(migration.SourceQuery, sourceArgs)
 	if err != nil {
-		return runResult, err
+		runResult.Error <- err
+		return
 	}
 
-	// get the destination db
-	if r.cfg.Verbose {
-		fmt.Printf("Migration DestinationDb: %s\n", migration.DestinationDb)
-	}
+	runResult.Status <- fmt.Sprintf("Migration DestinationDb: %s\n", migration.DestinationDb)
+
 	destinationDb, ok := r.cfg.Project.Databases[migration.DestinationDb]
 	if ok != true {
-		return runResult, errors.New("no destination database found for " + migration.DestinationDb)
+		runResult.Error <- err
+		return
 	}
 
 	// get the destination driver
-	if r.cfg.Verbose {
-		fmt.Printf("Migration Driver: %s\n", destinationDb.Driver)
-	}
+	runResult.Status <- fmt.Sprintf("Migration Driver: %s\n", destinationDb.Driver)
 
 	destinationDriver, err := r.configureDriver(machineName, destinationDb)
 	if err != nil {
-		return runResult, err
+		runResult.Error <- err
+		return
 	}
 	runResult.DestinationDriver = &destinationDriver
 
@@ -235,12 +255,12 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 
 	queryTemplate, err := template.New("query").Funcs(sprig.TxtFuncMap()).Parse(migration.DestinationQuery)
 	if err != nil {
+		// we have no intention from recovering from this.
+		// todo: determine why we failed.
 		panic(err)
 	}
 
-	if r.cfg.Verbose {
-		fmt.Printf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)
-	}
+	runResult.Status <- fmt.Sprintf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)
 
 	// iterate over the sourceRecordChan for driver.Record objects
 	for record := range sourceRecordChan {
@@ -281,7 +301,7 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 
 			// If the transformation script wants us to skip this record
 			if endMigration {
-				return runResult, nil
+				return
 			}
 		}
 
@@ -292,25 +312,22 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 		var query bytes.Buffer
 		err = queryTemplate.Execute(&query, record)
 		if err != nil {
-			return runResult, err
+			runResult.Error <- err
+			return
 		}
 
-		if r.cfg.Verbose {
-			fmt.Printf("Migration %s Destination Query: %s\n", machineName, strings.Trim(query.String(), "\n"))
-			fmt.Printf("Migration %s Destination Args: %s\n", machineName, args)
-		}
+		runResult.Status <- fmt.Sprintf("Migration %s Destination Args: %s\n", machineName, args)
 
 		err = destinationDriver.In(query.String(), args, record)
 		if err != nil {
-			return runResult, err
+			runResult.Error <- err
+			return
 		}
 	}
 
 	destinationDriver.Done()
-
-	fmt.Printf("Done with migration %s\n", migration.Component.MachineName)
-
-	return runResult, nil
+	runResult.Status <- fmt.Sprintf("Done with migration %s\n", migration.Component.MachineName)
+	runResult.Done <- true
 }
 
 // addScriptFunctions add utility functions to script context
@@ -399,10 +416,12 @@ func (r *runner) persistVal(migration string, k string, fallback string) string 
 
 // scriptRunner returns run function for script context
 func (r *runner) scriptRunner(machineNameFromScript string, argsFromScript []string) []driver.ResultCollectionItem {
-	runResult, err := r.Run(machineNameFromScript, argsFromScript)
+	runResult, err := r.RunAsync(machineNameFromScript, argsFromScript)
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err.Error())
 	}
+
+	// TODO wait for done!
 
 	dd := *runResult.DestinationDriver
 

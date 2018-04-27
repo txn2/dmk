@@ -106,6 +106,16 @@ migrations:
 
       var v = persistVal(getMigration(), rec.id.toString(), getUuid());
       print("GOT PERSIST VAL: [" + v + "]");
+      testSlowFunction();
+
+      function testSlowFunction()
+      {
+          print("Waiting 500 miliseconds")
+          var date = new Date();
+          var curDate = null;
+          do { curDate = new Date(); }
+          while(curDate-date < 500);
+      }
 
   cassandra_to_cassandra_using_collector:
     component:
