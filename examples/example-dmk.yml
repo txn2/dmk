@@ -145,11 +145,11 @@ migrations:
 
       sendRecord(rec);
       sendArgs([rec.system, rec.name]);
-  cassnadra_to_cassandra_name_lookup:
+  cassandra_to_cassandra_name_lookup:
     component:
       kind: Migration
       name: Cassnadra to Cassandra Name Lookup
-      machineName: cassnadra_to_cassandra_name_lookup
+      machineName: cassandra_to_cassandra_name_lookup
       description: Migrate data from migration_data to migration_name to make a table
         of unique names.
     sourceDb: cassandra_dev
@@ -263,7 +263,7 @@ migrations:
       name: Sample Migration
       machineName: sample_migration
       description: Scripted run of example_csv_to_cassandra, cassandra_to_cassandra_by_name,
-        cassnadra_to_cassandra_name_lookup and cassandra_to_cassandra_using_collector.
+        cassandra_to_cassandra_name_lookup and cassandra_to_cassandra_using_collector.
     sourceDb: example_args
     destinationDb: example_data_migration_collector
     sourceQuery: ""
@@ -277,7 +277,7 @@ migrations:
 
       run("example_csv_to_cassandra", []);
       run("cassandra_to_cassandra_by_name", [rec.System]);
-      run("cassnadra_to_cassandra_name_lookup", [rec.System]);
+      run("cassandra_to_cassandra_name_lookup", [rec.System]);
       run("cassandra_to_cassandra_using_collector", [rec.System]);
 
 tunnels: {}
