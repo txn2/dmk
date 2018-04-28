@@ -10,6 +10,8 @@ import (
 
 	"strings"
 
+	"log"
+
 	"github.com/Masterminds/sprig"
 	"github.com/boltdb/bolt"
 	"github.com/davecgh/go-spew/spew"
@@ -63,6 +65,7 @@ type runner struct {
 
 // NewRunner configures and returns a new runner
 func NewRunner(cfg RunnerCfg) *runner {
+
 	runner := &runner{
 		cfg: cfg,
 	}
@@ -148,9 +151,11 @@ func (r *runner) tunnel(database cfg.Database) error {
 
 // Run runs a migration
 func (r *runner) RunAsync(machineName string, sourceArgs []string) (*RunResult, error) {
-	doneChan := make(chan bool, 0)
-	errorChan := make(chan error, 0)
-	statusChan := make(chan string, 0)
+	doneChan := make(chan bool, 1)
+	errorChan := make(chan error, 1)
+	statusChan := make(chan string, 1)
+
+	//	doneChan <- false
 
 	runResult := &RunResult{
 		MachineName: machineName,
@@ -246,12 +251,17 @@ func (r *runner) run(runResult *RunResult) {
 	// javascript transformation script
 	script := migration.TransformationScript
 
-	// Javascript engine,
-	// see http://duktape.org/ and https://github.com/olebedev/go-duktape
-	// see https://github.com/mcuadros/go-candyjs
-	ctx := candyjs.NewContext()
-	defer ctx.DestroyHeap()
-	r.addScriptFunctions(*ctx, machineName)
+	var ctx *candyjs.Context
+
+	if script != "" {
+		// Javascript engine,
+		// see http://duktape.org/ and https://github.com/olebedev/go-duktape
+		// see https://github.com/mcuadros/go-candyjs
+		ctx = candyjs.NewContext()
+
+		defer ctx.DestroyHeap()
+		r.addScriptFunctions(*ctx, machineName)
+	}
 
 	queryTemplate, err := template.New("query").Funcs(sprig.TxtFuncMap()).Parse(migration.DestinationQuery)
 	if err != nil {
@@ -292,15 +302,19 @@ func (r *runner) run(runResult *RunResult) {
 				endMigration = true
 			})
 
+			// Evaluate the javascript script
 			ctx.EvalString(script)
 
 			// If the transformation script wants us to skip this record
 			if skipRecord {
+				runResult.Status <- fmt.Sprintf("Migration script wants to skip this record.\n")
 				continue
 			}
 
-			// If the transformation script wants us to skip this record
+			// If the transformation script wants us to the the migration
 			if endMigration {
+				runResult.Status <- fmt.Sprintf("Migration script is terminating migration.\n")
+				runResult.Done <- true
 				return
 			}
 		}
@@ -313,6 +327,7 @@ func (r *runner) run(runResult *RunResult) {
 		err = queryTemplate.Execute(&query, record)
 		if err != nil {
 			runResult.Error <- err
+			runResult.Done <- true
 			return
 		}
 
@@ -321,6 +336,7 @@ func (r *runner) run(runResult *RunResult) {
 		err = destinationDriver.In(query.String(), args, record)
 		if err != nil {
 			runResult.Error <- err
+			runResult.Done <- true
 			return
 		}
 	}
@@ -361,11 +377,11 @@ func (r *runner) addScriptFunctions(ctx candyjs.Context, machineName string) {
 
 	ctx.PushGlobalGoFunction("dump", func(obj interface{}) {
 		sd := spew.Sdump(obj)
-		fmt.Printf(">>> SCRIPT %s: %s\n", machineName, sd)
+		log.Printf("<script dump> %s: %s", machineName, sd)
 	})
 
 	ctx.PushGlobalGoFunction("print", func(obj interface{}) {
-		fmt.Printf(">>> SCRIPT %s: %s\n", machineName, obj)
+		log.Printf("<script message> %s: %s", machineName, obj)
 	})
 }
 
@@ -415,28 +431,49 @@ func (r *runner) persistVal(migration string, k string, fallback string) string 
 }
 
 // scriptRunner returns run function for script context
-func (r *runner) scriptRunner(machineNameFromScript string, argsFromScript []string) []driver.ResultCollectionItem {
-	runResult, err := r.RunAsync(machineNameFromScript, argsFromScript)
-	if err != nil {
-		fmt.Printf("ERROR: %s\n", err.Error())
+func (r *runner) scriptRunner(machineNameFromScript string, argsFromScript []string, cb func(string)) []driver.ResultCollectionItem {
+	// the callback is optional for javascript
+	if cb == nil {
+		cb = func(string) {
+			// suppress
+		}
 	}
 
-	// TODO wait for done!
+	runResult, err := r.RunAsync(machineNameFromScript, argsFromScript)
+	if err != nil {
+		cb(fmt.Sprintf("ERROR: %s\n", err.Error()))
+	}
+
+	// script run migrations are synchronous so we need to
+	// wait for done
+	cb(fmt.Sprintf("Run migration called from script. Running...\n"))
+
+migrationOut:
+	for {
+		select {
+		case <-runResult.Done:
+			cb(fmt.Sprintf("[%s]: Done", machineNameFromScript))
+			break migrationOut
+		case msg := <-runResult.Status:
+			cb(fmt.Sprintf("[%s]: %s", machineNameFromScript, msg))
+		case err := <-runResult.Error:
+			cb(fmt.Sprintf("ERROR [%s]: %s", machineNameFromScript, err.Error()))
+		}
+	}
 
 	dd := *runResult.DestinationDriver
 
 	if cdd, ok := dd.(*driver.Collector); ok {
 		collection := cdd.GetCollection()
 		if r.cfg.Verbose {
-			fmt.Printf("Argset will receive %d items from collector.\n", len(collection))
+			cb(fmt.Sprintf("Argset will receive %d items from collector.", len(collection)))
 		}
 
 		return collection
 	}
 
-	if r.cfg.Verbose {
-		fmt.Printf("WARNING: run() for %s executed from a script but did not output to a collector.\n", machineNameFromScript)
-	}
+	cb(fmt.Sprintf("WARNING: run() for %s executed from a script but did not output to a collector.", machineNameFromScript))
+
 	return []driver.ResultCollectionItem{}
 }
 

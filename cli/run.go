@@ -3,6 +3,8 @@ package cli
 import (
 	"fmt"
 
+	"log"
+
 	"github.com/desertbit/grumble"
 	"github.com/txn2/dmk/migrate"
 )
@@ -57,15 +59,12 @@ func runMigration(machineName string, f grumble.FlagMap, args []string) {
 		Cli.PrintError(err)
 	}
 
-	fmt.Printf("Should get here very quickly...\n")
-
 	for {
 		select {
 		case <-res.Done:
-			fmt.Printf("Im done\n")
 			return
-		case msg := <-res.Status:
-			fmt.Printf("MESSAGE --> %s", msg)
+		case msg := <-res.Status: // TODO log output?
+			log.Printf("%s", msg)
 		case err := <-res.Error:
 			fmt.Printf("Got error: %s", err.Error())
 		}
