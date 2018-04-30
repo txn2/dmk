@@ -53,7 +53,13 @@ type RunResult struct {
 	SourceDriver      *driver.Driver
 	Done              chan bool
 	Error             chan error
-	Status            chan string
+	Status            chan RunStatus
+}
+
+// RunStatus
+type RunStatus struct {
+	Count int
+	Msg   string
 }
 
 // runner runs migrations for a project with the Run method.
@@ -151,9 +157,9 @@ func (r *runner) tunnel(database cfg.Database) error {
 
 // Run runs a migration
 func (r *runner) RunAsync(machineName string, sourceArgs []string) (*RunResult, error) {
-	doneChan := make(chan bool, 1)
-	errorChan := make(chan error, 1)
-	statusChan := make(chan string, 1)
+	doneChan := make(chan bool)
+	errorChan := make(chan error)
+	statusChan := make(chan RunStatus)
 
 	//	doneChan <- false
 
@@ -175,10 +181,10 @@ func (r *runner) run(runResult *RunResult) {
 	machineName := runResult.MachineName
 	sourceArgs := runResult.SourceArgs
 
-	runResult.Status <- fmt.Sprintln("Running Migration: " + machineName)
+	runResult.Status <- RunStatus{0, fmt.Sprintln("Running Migration: " + machineName)}
 
 	if r.cfg.DryRun {
-		runResult.Status <- fmt.Sprintf("\n>> This is a DRY RUN. No data will be migrated. <<\n\n")
+		runResult.Status <- RunStatus{0, fmt.Sprintf("\n>> This is a DRY RUN. No data will be migrated. <<\n\n")}
 	}
 
 	// get the migration
@@ -211,8 +217,8 @@ func (r *runner) run(runResult *RunResult) {
 	// set a pointer to the source driver in the run result
 	runResult.SourceDriver = &sourceDriver
 
-	runResult.Status <- fmt.Sprintf("%s source query expects %d args.\n", machineName, migration.SourceQueryNArgs)
-	runResult.Status <- fmt.Sprintf("%s received %d args.\n", machineName, len(sourceArgs))
+	runResult.Status <- RunStatus{0, fmt.Sprintf("%s source query expects %d args.\n", machineName, migration.SourceQueryNArgs)}
+	runResult.Status <- RunStatus{0, fmt.Sprintf("%s received %d args.\n", machineName, len(sourceArgs))}
 
 	if migration.SourceQueryNArgs != len(sourceArgs) {
 		runResult.Error <- fmt.Errorf("expecting %d args and got %d", migration.SourceQueryNArgs, len(sourceArgs))
@@ -221,8 +227,8 @@ func (r *runner) run(runResult *RunResult) {
 
 	// Source data collection.
 	// do we have the requested number of args
-	runResult.Status <- fmt.Sprintf("Migration %s Source Query: %s\n", machineName, strings.Trim(migration.SourceQuery, "\n"))
-	runResult.Status <- fmt.Sprintf("Migration %s Source Args: %s\n", machineName, sourceArgs)
+	runResult.Status <- RunStatus{0, fmt.Sprintf("Migration %s Source Query: %s\n", machineName, strings.Trim(migration.SourceQuery, "\n"))}
+	runResult.Status <- RunStatus{0, fmt.Sprintf("Migration %s Source Args: %s\n", machineName, sourceArgs)}
 
 	sourceRecordChan, err := sourceDriver.Out(migration.SourceQuery, sourceArgs)
 	if err != nil {
@@ -230,7 +236,7 @@ func (r *runner) run(runResult *RunResult) {
 		return
 	}
 
-	runResult.Status <- fmt.Sprintf("Migration DestinationDb: %s\n", migration.DestinationDb)
+	runResult.Status <- RunStatus{0, fmt.Sprintf("Migration DestinationDb: %s\n", migration.DestinationDb)}
 
 	destinationDb, ok := r.cfg.Project.Databases[migration.DestinationDb]
 	if ok != true {
@@ -239,7 +245,7 @@ func (r *runner) run(runResult *RunResult) {
 	}
 
 	// get the destination driver
-	runResult.Status <- fmt.Sprintf("Migration Driver: %s\n", destinationDb.Driver)
+	runResult.Status <- RunStatus{0, fmt.Sprintf("Migration Driver: %s\n", destinationDb.Driver)}
 
 	destinationDriver, err := r.configureDriver(machineName, destinationDb)
 	if err != nil {
@@ -270,10 +276,13 @@ func (r *runner) run(runResult *RunResult) {
 		panic(err)
 	}
 
-	runResult.Status <- fmt.Sprintf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)
+	runResult.Status <- RunStatus{0, fmt.Sprintf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)}
 
+	count := 0
 	// iterate over the sourceRecordChan for driver.Record objects
 	for record := range sourceRecordChan {
+
+		count += 1
 
 		args := make([]string, 0)
 
@@ -307,13 +316,13 @@ func (r *runner) run(runResult *RunResult) {
 
 			// If the transformation script wants us to skip this record
 			if skipRecord {
-				runResult.Status <- fmt.Sprintf("Migration script wants to skip this record.\n")
+				runResult.Status <- RunStatus{count, fmt.Sprintf("Migration script wants to skip this record.\n")}
 				continue
 			}
 
 			// If the transformation script wants us to the the migration
 			if endMigration {
-				runResult.Status <- fmt.Sprintf("Migration script is terminating migration.\n")
+				runResult.Status <- RunStatus{count, fmt.Sprintf("Migration script is terminating migration.\n")}
 				runResult.Done <- true
 				return
 			}
@@ -331,7 +340,7 @@ func (r *runner) run(runResult *RunResult) {
 			return
 		}
 
-		runResult.Status <- fmt.Sprintf("Migration %s Destination Args: %s\n", machineName, args)
+		runResult.Status <- RunStatus{count, fmt.Sprintf("Migration %s Destination Args: %s\n", machineName, args)}
 
 		err = destinationDriver.In(query.String(), args, record)
 		if err != nil {
@@ -342,7 +351,7 @@ func (r *runner) run(runResult *RunResult) {
 	}
 
 	destinationDriver.Done()
-	runResult.Status <- fmt.Sprintf("Done with migration %s\n", migration.Component.MachineName)
+	runResult.Status <- RunStatus{count, fmt.Sprintf("Done with migration %s\n", migration.Component.MachineName)}
 	runResult.Done <- true
 }
 

@@ -2,10 +2,11 @@ package cli
 
 import (
 	"fmt"
-
 	"log"
 
 	"io/ioutil"
+
+	"time"
 
 	"github.com/desertbit/grumble"
 	"github.com/gizak/termui"
@@ -81,10 +82,11 @@ func runMigrationLogOut(res *migrate.RunResult) {
 			log.Printf("Done.")
 			return
 		case msg := <-res.Status: // TODO log output?
-			log.Printf(msg)
+			log.Printf(msg.Msg)
 		case err := <-res.Error:
 			fmt.Printf("Got error: %s", err.Error())
 			return
+
 		}
 	}
 }
@@ -104,6 +106,18 @@ func runMigrationGui(res *migrate.RunResult) {
 		termui.StopLoop()
 	})
 
+	prog := termui.NewPar("")
+	prog.Height = 3
+	prog.BorderLabel = "Completed"
+
+	per := termui.NewPar("")
+	per.Height = 3
+	per.BorderLabel = "Per Record"
+
+	tot := termui.NewPar("")
+	tot.Height = 3
+	tot.BorderLabel = "Elapsed"
+
 	ins := termui.NewPar("Press [q] to quit at any time.")
 	ins.Height = 1
 	ins.Border = false
@@ -115,18 +129,28 @@ func runMigrationGui(res *migrate.RunResult) {
 			termui.NewCol(12, 0, status.Panel),
 		),
 		termui.NewRow(
+			termui.NewCol(2, 0, prog),
+			termui.NewCol(2, 0, per),
+			termui.NewCol(2, 0, tot),
+		),
+		termui.NewRow(
 			termui.NewCol(12, 0, ins),
 		),
 	)
 
 	termui.Body.Align()
 
-	termui.Render(ins)
+	termui.Render(ins, prog, per, tot)
 
 	// use the -l (logout) flag if script output is needed.
 	log.SetFlags(0)
 	log.SetOutput(ioutil.Discard)
 
+	start := time.Now()
+
+	// @todo: fix race condition from termui when using this as a goroutine
+	// trade off is not using a routine here not being able to use termui.Loop to
+	// wait for the "q" command
 	go func() {
 		for {
 			select {
@@ -134,11 +158,21 @@ func runMigrationGui(res *migrate.RunResult) {
 				status.AddMessage(fmt.Sprintf("Done."))
 				return
 			case msg := <-res.Status:
-				status.AddMessage(msg)
+				elapsed := time.Since(start)
+				perR := elapsed.Seconds() / float64(msg.Count)
+
+				status.AddMessage(msg.Msg)
+
+				prog.Text = fmt.Sprintf("%d", msg.Count)
+				tot.Text = fmt.Sprintf("%.2fs", elapsed.Seconds())
+				per.Text = fmt.Sprintf("%.2fs", perR)
+
+				termui.Render(status.Panel, prog, per, tot)
 			case err := <-res.Error:
 				status.AddMessage(fmt.Sprintf("Got error: %s", err.Error()))
 				return
 			}
+			termui.Render(status.Panel)
 		}
 	}()
 

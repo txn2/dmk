@@ -17,8 +17,6 @@ func NewLogPanel(title string, height int) *logPanel {
 	ls.BorderLabel = title
 	ls.Height = height
 
-	termui.Render(ls)
-
 	return &logPanel{
 		Panel:    ls,
 		messages: make([]string, 0),
@@ -33,10 +31,8 @@ func (lp *logPanel) AddMessage(msg string) {
 
 	if len(lp.messages) > maxRows {
 		lp.Panel.Items = lp.messages[(len(lp.messages) - maxRows):]
-		termui.Render(lp.Panel)
 		return
 	}
 
 	lp.Panel.Items = lp.messages
-	termui.Render(lp.Panel)
 }
