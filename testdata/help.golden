@@ -1,0 +1,69 @@
+ Data Migration Kit
+  ___  _____ _____ 
+ |   \|     |  |  |
+ | |  | | | |    -|
+ |___/|_|_|_|__|__|
+             v0.0.0
+
+ type "help" for cmds
+ type "ls p" for a list of projects
+ type "create p" to create a project
+
+
+Data migration kit.
+
+Usage:
+======
+  DMK [command]
+
+Commands:
+=========
+  create, add     create projects, databases, and migrations
+  delete, rm      delete databases
+  describe, desc  describe components such as projects, databases, queries, transformations and migrations
+  edit, e         edit databases
+  help            use 'help [command]' for command help
+  list, ls        list components such as projects, databases, and migrations
+  open, o         open components such as projects, databases, queries, transformations and migrations
+  reload, rl      reload active project
+  run, r          run a migration
+
+Sub Commands:
+=============
+
+create:
+  database, db, d  create a database
+  migration, m     create a migration
+  project, p       create a project
+  tunnel, t        create an ssh tunnel
+
+delete:
+  database, db, d  delete a database
+  migration, m     delete a migration
+  tunnel, t        delete a tunnel
+
+describe:
+  database, db, d  describe a database
+  migration, m     describe a migration
+  project, p       describe a project
+
+edit:
+  database, db, d  edit a database
+
+list:
+  databases, db, d  list databases
+  drivers           list drivers
+  migrations, m     list migrations
+  projects, p       list projects
+  tunnels, t        list tunnels
+
+open:
+  project, p, proj  open project
+
+Flags:
+======
+  -d, --directory string    specify a directory (default: ./)
+  -h, --help                display help
+      --nocolor             disable color output
+  -p, --project   string    specify a project
+

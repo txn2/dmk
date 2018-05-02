@@ -17,6 +17,7 @@ func init() {
 		Flags: func(f *grumble.Flags) {
 			f.Bool("d", "dry-run", false, "Dry run outputs the first 5 records.")
 			f.Bool("v", "verbose", false, "Verbose output.")
+			f.Bool("n", "no-time", false, "Disable timestamps and duration for deterministic output.")
 		},
 		Run: func(c *grumble.Context) error {
 			if ok := activeProjectCheck(); ok {
@@ -45,6 +46,7 @@ func runMigration(machineName string, f grumble.FlagMap, args []string) {
 		DriverManager: DriverManager,
 		TunnelManager: TunnelManager,
 		Path:          appState.Directory,
+		NoTime:        f.Bool("no-time"),
 		DryRun:        f.Bool("dry-run"),
 		Verbose:       f.Bool("verbose"),
 	}

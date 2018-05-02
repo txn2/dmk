@@ -40,7 +40,7 @@ Create example Keyspace and table in Cassandra:
 
 ```bash
 $ docker run -it --rm -v $(pwd)/dev/cassandra.cql:/setup.cql --net host \
-     cassandra cqlsh localhost 39042 -f /setup.cql
+       cassandra cqlsh localhost 39042 -f /setup.cql
 ```
 
 Use the official Cassandra image to open a `cqlsh` session to

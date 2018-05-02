@@ -10,6 +10,8 @@ import (
 
 	"strings"
 
+	"os"
+
 	"github.com/Masterminds/sprig"
 	"github.com/boltdb/bolt"
 	"github.com/davecgh/go-spew/spew"
@@ -19,6 +21,7 @@ import (
 	"github.com/txn2/dmk/driver"
 	"github.com/txn2/dmk/tunnel"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // A Runner runs a Migration consisting of a
@@ -41,20 +44,41 @@ type RunnerCfg struct {
 	TunnelManager tunnel.Manager
 	DryRun        bool
 	Verbose       bool
+	NoTime        bool
 	Path          string // relative path to config
 }
 
 // see NewRunner
 type runner struct {
-	Cfg      RunnerCfg
-	Log      *zap.Logger
-	drivers  map[string]driver.Driver // store configured drivers
-	localDbs map[string]*bolt.DB      // local bold databases for value mapping
+	Cfg     RunnerCfg
+	Log     *zap.Logger
+	drivers map[string]driver.Driver // store configured drivers
 }
+
+var localDbs map[string]*bolt.DB // local bold databases for value mapping
 
 // NewRunner creates and configures a new runner
 func NewRunner(cfg RunnerCfg) *runner {
-	logger, _ := zap.NewProduction()
+	//	logger, _ := zap.NewProduction()
+
+	atom := zap.NewAtomicLevel()
+	encoderCfg := zap.NewProductionEncoderConfig()
+
+	if cfg.NoTime {
+		// disable timestamps for deterministic output.
+		encoderCfg.TimeKey = ""
+	}
+	logger := zap.New(zapcore.NewCore(
+		zapcore.NewJSONEncoder(encoderCfg),
+		zapcore.Lock(os.Stdout),
+		atom,
+	))
+	defer logger.Sync()
+
+	logger.Info("info logging enabled")
+
+	atom.SetLevel(zap.DebugLevel)
+	logger.Info("info logging disabled")
 
 	rnr := &runner{
 		Cfg: cfg,
@@ -69,7 +93,7 @@ func (r *runner) getLocalDb(migration string) (*bolt.DB, error) {
 	// one database per migration (to avoid dealing with multiple writers)
 	dbFile := r.Cfg.Path + r.Cfg.Project.Component.MachineName + "-" + migration + ".db"
 
-	if db, ok := r.localDbs[dbFile]; ok {
+	if db, ok := localDbs[dbFile]; ok {
 		return db, nil
 	}
 
@@ -78,10 +102,10 @@ func (r *runner) getLocalDb(migration string) (*bolt.DB, error) {
 		return nil, err
 	}
 
-	if r.localDbs == nil {
-		r.localDbs = make(map[string]*bolt.DB, 1)
+	if localDbs == nil {
+		localDbs = make(map[string]*bolt.DB, 1)
 	}
-	r.localDbs[dbFile] = db
+	localDbs[dbFile] = db
 
 	return db, nil
 }
@@ -190,6 +214,10 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	)
 
 	if migration.SourceQueryNArgs != len(sourceArgs) {
+		r.Log.Error("Unexpected number or arguments received",
+			zap.Int("ExpectedArgs", migration.SourceQueryNArgs),
+			zap.Int("ReceivedArgs", len(sourceArgs)),
+		)
 		return runResult, fmt.Errorf("expecting %d args and got %d", migration.SourceQueryNArgs, len(sourceArgs))
 	}
 
@@ -203,19 +231,14 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 		return runResult, err
 	}
 
-	// get the destination db
-	if r.Cfg.Verbose {
-		fmt.Printf("Migration DestinationDb: %s\n", migration.DestinationDb)
-	}
+	r.Log.Info("Migration DestinationDb", zap.String("MachineName", migration.DestinationDb))
+
 	destinationDb, ok := r.Cfg.Project.Databases[migration.DestinationDb]
 	if ok != true {
 		return runResult, errors.New("no destination database found for " + migration.DestinationDb)
 	}
 
-	// get the destination driver
-	if r.Cfg.Verbose {
-		fmt.Printf("Migration Driver: %s\n", destinationDb.Driver)
-	}
+	r.Log.Info("Migration Driver", zap.String("MachineName", destinationDb.Driver))
 
 	destinationDriver, err := r.configureDriver(machineName, destinationDb)
 	if err != nil {
@@ -238,12 +261,16 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 		panic(err)
 	}
 
-	if r.Cfg.Verbose {
-		fmt.Printf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)
-	}
+	r.Log.Info("Migrating data.",
+		zap.String("FromDb", migration.SourceDb),
+		zap.String("ToDb", migration.DestinationDb),
+	)
+
+	count := 0
 
 	// iterate over the sourceRecordChan for driver.Record objects
 	for record := range sourceRecordChan {
+		count += 1
 
 		args := make([]string, 0)
 
@@ -295,10 +322,12 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 			return runResult, err
 		}
 
-		if r.Cfg.Verbose {
-			fmt.Printf("Migration %s Destination Query: %s\n", machineName, strings.Trim(query.String(), "\n"))
-			fmt.Printf("Migration %s Destination Args: %s\n", machineName, args)
-		}
+		r.Log.Debug("Migration query.",
+			zap.Int("Count", count),
+			zap.String("MachineName", machineName),
+			zap.String("Query", strings.Trim(query.String(), "\n")),
+			zap.Strings("Args", args),
+		)
 
 		err = destinationDriver.In(query.String(), args, record)
 		if err != nil {
@@ -308,7 +337,7 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 
 	destinationDriver.Done()
 
-	fmt.Printf("Done with migration %s\n", migration.Component.MachineName)
+	r.Log.Info("Done with migration.", zap.String("MachineName", migration.Component.MachineName))
 
 	return runResult, nil
 }
@@ -344,11 +373,17 @@ func (r *runner) addScriptFunctions(ctx candyjs.Context, machineName string) {
 
 	ctx.PushGlobalGoFunction("dump", func(obj interface{}) {
 		sd := spew.Sdump(obj)
-		fmt.Printf(">>> SCRIPT %s: %s\n", machineName, sd)
+		r.Log.Debug("Script object dump.",
+			zap.String("MachineName", machineName),
+			zap.String("Dump", sd),
+		)
 	})
 
 	ctx.PushGlobalGoFunction("print", func(obj interface{}) {
-		fmt.Printf(">>> SCRIPT %s: %s\n", machineName, obj)
+		r.Log.Debug("Script output.",
+			zap.String("MachineName", machineName),
+			zap.Any("Print", obj),
+		)
 	})
 }
 
@@ -408,16 +443,16 @@ func (r *runner) scriptRunner(machineNameFromScript string, argsFromScript []str
 
 	if cdd, ok := dd.(*driver.Collector); ok {
 		collection := cdd.GetCollection()
-		if r.Cfg.Verbose {
-			fmt.Printf("Argset will receive %d items from collector.\n", len(collection))
-		}
+
+		r.Log.Debug("Number of items Argset will receive from collector.",
+			zap.Int("TemCount:", len(collection)))
 
 		return collection
 	}
 
-	if r.Cfg.Verbose {
-		fmt.Printf("WARNING: run() for %s executed from a script but did not output to a collector.\n", machineNameFromScript)
-	}
+	r.Log.Info("WARNING: run() for %s executed from a script but did not output to a collector.",
+		zap.String("MachineName", machineNameFromScript))
+
 	return []driver.ResultCollectionItem{}
 }
 

@@ -2,6 +2,9 @@ version: '3.1'
 
 services:
   mysql-db:
+    container_name: dmk-test-mysql
+    labels:
+      com.txn2.dmk.dmk-test-mysql-version: 1
     image: mysql
     ports:
       - 33306:3306
@@ -9,6 +12,9 @@ services:
       MYSQL_ROOT_PASSWORD: example
       MYSQL_DATABASE: migration_data
   cassandra-db:
+    container_name: dmk-test-cassandra
+    labels:
+      com.txn2.dmk.dmk-test-cassandra-version: 1
     image: cassandra
     ports:
       - 39042:9042
