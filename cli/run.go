@@ -3,8 +3,8 @@ package cli
 import (
 	"fmt"
 
-	"github.com/txn2/dmk/migrate"
 	"github.com/desertbit/grumble"
+	"github.com/txn2/dmk/migrate"
 )
 
 func init() {
@@ -40,7 +40,7 @@ func init() {
 
 func runMigration(machineName string, f grumble.FlagMap, args []string) {
 
-	runner := &migrate.Runner{
+	runnerCfg := migrate.RunnerCfg{
 		Project:       appState.Project,
 		DriverManager: DriverManager,
 		TunnelManager: TunnelManager,
@@ -49,8 +49,10 @@ func runMigration(machineName string, f grumble.FlagMap, args []string) {
 		Verbose:       f.Bool("verbose"),
 	}
 
+	rnr := migrate.NewRunner(runnerCfg)
+
 	// todo: display stats when the result becomes useful
-	_, err := runner.Run(machineName, args)
+	_, err := rnr.Run(machineName, args)
 	if err != nil {
 		Cli.PrintError(err)
 	}
