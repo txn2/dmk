@@ -46,6 +46,7 @@ type RunnerCfg struct {
 	Verbose       bool
 	NoTime        bool   // Disable timestamps and duration for deterministic output
 	Path          string // relative path to config
+	Logger        *zap.Logger
 }
 
 // see NewRunner
@@ -59,24 +60,26 @@ var localDbs map[string]*bolt.DB // local bold databases for value mapping
 
 // NewRunner creates and configures a new runner
 func NewRunner(cfg RunnerCfg) *runner {
-	//	logger, _ := zap.NewProduction()
 
-	atom := zap.NewAtomicLevel()
-	encoderCfg := zap.NewProductionEncoderConfig()
+	logger := cfg.Logger
 
-	if cfg.NoTime {
-		// disable timestamps for deterministic output.
-		encoderCfg.TimeKey = ""
+	if logger == nil {
+		atom := zap.NewAtomicLevel()
+		encoderCfg := zap.NewProductionEncoderConfig()
+
+		if cfg.NoTime {
+			// disable timestamps for deterministic output.
+			encoderCfg.TimeKey = ""
+		}
+		logger = zap.New(zapcore.NewCore(
+			zapcore.NewJSONEncoder(encoderCfg),
+			zapcore.Lock(os.Stdout),
+			atom,
+		))
+
+		atom.SetLevel(zap.DebugLevel)
+		defer logger.Sync()
 	}
-	logger := zap.New(zapcore.NewCore(
-		zapcore.NewJSONEncoder(encoderCfg),
-		zapcore.Lock(os.Stdout),
-		atom,
-	))
-
-	defer logger.Sync()
-
-	atom.SetLevel(zap.DebugLevel)
 
 	rnr := &runner{
 		Cfg: cfg,

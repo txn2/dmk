@@ -8,14 +8,15 @@ import (
 	"errors"
 
 	"github.com/AlecAivazis/survey"
-	"github.com/txn2/dmk/driver"
-	"github.com/txn2/dmk/migrate"
-	"github.com/txn2/dmk/tunnel"
 	"github.com/desertbit/grumble"
 	"github.com/fatih/color"
 	"github.com/go-yaml/yaml"
+	"github.com/txn2/dmk/driver"
+	"github.com/txn2/dmk/migrate"
+	"github.com/txn2/dmk/tunnel"
 )
 
+// appState holds state for the CLI
 var appState struct {
 	Project   migrate.Project
 	Directory string // base directory for commandline interaction with projects
@@ -201,4 +202,17 @@ func confirmAndSave(machineName string, component interface{}) bool {
 	}
 
 	return true
+}
+
+func fileLog(machineName string) (*os.File, error) {
+
+	pMn := appState.Project.Component.MachineName
+	f, err := os.Create(appState.Directory + pMn + "-" + machineName + ".log")
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}
+
+	return f, err
 }
