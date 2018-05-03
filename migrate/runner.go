@@ -44,7 +44,7 @@ type RunnerCfg struct {
 	TunnelManager tunnel.Manager
 	DryRun        bool
 	Verbose       bool
-	NoTime        bool
+	NoTime        bool   // Disable timestamps and duration for deterministic output
 	Path          string // relative path to config
 }
 
@@ -272,6 +272,9 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	}
 
 	setupDuration := time.Now().Sub(migrationStart)
+	if r.Cfg.NoTime {
+		setupDuration = 0
+	}
 
 	r.Log.Info("Migrating data.",
 		zap.String("Type", "Start"),
@@ -337,6 +340,11 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 			return runResult, err
 		}
 
+		recDuration := time.Now().Sub(recordStart)
+		if r.Cfg.NoTime {
+			recDuration = 0
+		}
+
 		err = destinationDriver.In(query.String(), args, record)
 		if err != nil {
 			r.Log.Error("MigrationError",
@@ -346,7 +354,7 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 				zap.String("Query", strings.Trim(query.String(), "\n")),
 				zap.Strings("Args", args),
 				zap.String("MachineName", machineName),
-				zap.Duration("Duration", time.Now().Sub(recordStart)),
+				zap.Duration("Duration", recDuration),
 			)
 			return runResult, err
 		}
@@ -358,7 +366,7 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 			zap.String("Query", strings.Trim(query.String(), "\n")),
 			zap.Strings("Args", args),
 			zap.String("MachineName", machineName),
-			zap.Duration("Duration", time.Now().Sub(recordStart)),
+			zap.Duration("Duration", recDuration),
 		)
 
 	}
@@ -368,6 +376,10 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	t := time.Now()
 	elapsed := t.Sub(migrationStart)
 	processingDuration := elapsed - setupDuration
+
+	if r.Cfg.NoTime {
+		setupDuration, elapsed, processingDuration = 0, 0, 0
+	}
 
 	r.Log.Info("Done with migration.",
 		zap.String("MachineName", migration.Component.MachineName),

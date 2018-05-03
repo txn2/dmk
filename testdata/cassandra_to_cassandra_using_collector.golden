@@ -1,54 +1,52 @@
-{"level":"info","msg":"info logging enabled"}
-{"level":"info","msg":"info logging disabled"}
 {"level":"info","msg":"Running Migration","MachineName":"cassandra_to_cassandra_using_collector"}
 {"level":"info","msg":"Source query args expected.","MachineName":"cassandra_to_cassandra_using_collector","ExpectedNArgs":1,"ReceivedNArgs":1}
 {"level":"info","msg":"Source query.","SourceQuery":"SELECT system, name FROM migration_name WHERE system = ?;","SourceArgs":["example"]}
 {"level":"info","msg":"Migration DestinationDb","MachineName":"cassandra_dev"}
 {"level":"info","msg":"Migration Driver","MachineName":"cassandra"}
-{"level":"info","msg":"Migrating data.","FromDb":"cassandra_dev","ToDb":"cassandra_dev"}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_using_collector","Print":"rec.system = example"}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_using_collector","Print":"rec.name = Generic"}
+{"level":"info","msg":"Migrating data.","Type":"Start","FromDb":"cassandra_dev","ToDb":"cassandra_dev","SetupDuration":0}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_using_collector","Print":"rec.system = example"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_using_collector","Print":"rec.name = Generic"}
 {"level":"info","msg":"Running Migration","MachineName":"collect_by_name"}
 {"level":"info","msg":"Source query args expected.","MachineName":"collect_by_name","ExpectedNArgs":2,"ReceivedNArgs":2}
 {"level":"info","msg":"Source query.","SourceQuery":"SELECT name, id FROM migration_data_name WHERE system = ? AND name = ?","SourceArgs":["example","Generic"]}
 {"level":"info","msg":"Migration DestinationDb","MachineName":"names_collector"}
 {"level":"info","msg":"Migration Driver","MachineName":"collector"}
-{"level":"info","msg":"Migrating data.","FromDb":"cassandra_dev","ToDb":"names_collector"}
-{"level":"debug","msg":"Migration query.","Count":1,"MachineName":"collect_by_name","Query":"","Args":[]}
-{"level":"debug","msg":"Migration query.","Count":2,"MachineName":"collect_by_name","Query":"","Args":[]}
-{"level":"debug","msg":"Migration query.","Count":3,"MachineName":"collect_by_name","Query":"","Args":[]}
-{"level":"debug","msg":"Migration query.","Count":4,"MachineName":"collect_by_name","Query":"","Args":[]}
-{"level":"debug","msg":"Migration query.","Count":5,"MachineName":"collect_by_name","Query":"","Args":[]}
-{"level":"debug","msg":"Migration query.","Count":6,"MachineName":"collect_by_name","Query":"","Args":[]}
-{"level":"debug","msg":"Migration query.","Count":7,"MachineName":"collect_by_name","Query":"","Args":[]}
-{"level":"info","msg":"Done with migration.","MachineName":"collect_by_name"}
+{"level":"info","msg":"Migrating data.","Type":"Start","FromDb":"cassandra_dev","ToDb":"names_collector","SetupDuration":0}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":1,"MachineName":"collect_by_name","Query":"","Args":[],"MachineName":"collect_by_name","Duration":0}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":2,"MachineName":"collect_by_name","Query":"","Args":[],"MachineName":"collect_by_name","Duration":0}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":3,"MachineName":"collect_by_name","Query":"","Args":[],"MachineName":"collect_by_name","Duration":0}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":4,"MachineName":"collect_by_name","Query":"","Args":[],"MachineName":"collect_by_name","Duration":0}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":5,"MachineName":"collect_by_name","Query":"","Args":[],"MachineName":"collect_by_name","Duration":0}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":6,"MachineName":"collect_by_name","Query":"","Args":[],"MachineName":"collect_by_name","Duration":0}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":7,"MachineName":"collect_by_name","Query":"","Args":[],"MachineName":"collect_by_name","Duration":0}
+{"level":"info","msg":"Done with migration.","MachineName":"collect_by_name","Type":"Done","SetupDuration":0,"ProcessingDuration":0,"TotalDuration":0,"TotalProcessed":7}
 {"level":"debug","msg":"Number of items Argset will receive from collector.","TemCount:":7}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_using_collector","Print":"SCRIPT got 7 items in collection."}
-{"level":"debug","msg":"Migration query.","Count":1,"MachineName":"cassandra_to_cassandra_using_collector","Query":"UPDATE migration_sets SET ids = { 4,5,6,7,8,9,10 } WHERE system = ? AND name = ?","Args":["example","Generic"]}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_using_collector","Print":"rec.system = example"}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_using_collector","Print":"rec.name = Test 1a from javascript!"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_using_collector","Print":"SCRIPT got 7 items in collection."}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":1,"MachineName":"cassandra_to_cassandra_using_collector","Query":"UPDATE migration_sets SET ids = { 4,5,6,7,8,9,10 } WHERE system = ? AND name = ?","Args":["example","Generic"],"MachineName":"cassandra_to_cassandra_using_collector","Duration":0}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_using_collector","Print":"rec.system = example"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_using_collector","Print":"rec.name = Test 1a from javascript!"}
 {"level":"info","msg":"Running Migration","MachineName":"collect_by_name"}
 {"level":"info","msg":"Source query args expected.","MachineName":"collect_by_name","ExpectedNArgs":2,"ReceivedNArgs":2}
 {"level":"info","msg":"Source query.","SourceQuery":"SELECT name, id FROM migration_data_name WHERE system = ? AND name = ?","SourceArgs":["example","Test 1a from javascript!"]}
 {"level":"info","msg":"Migration DestinationDb","MachineName":"names_collector"}
 {"level":"info","msg":"Migration Driver","MachineName":"collector"}
-{"level":"info","msg":"Migrating data.","FromDb":"cassandra_dev","ToDb":"names_collector"}
-{"level":"debug","msg":"Migration query.","Count":1,"MachineName":"collect_by_name","Query":"","Args":[]}
-{"level":"info","msg":"Done with migration.","MachineName":"collect_by_name"}
+{"level":"info","msg":"Migrating data.","Type":"Start","FromDb":"cassandra_dev","ToDb":"names_collector","SetupDuration":0}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":1,"MachineName":"collect_by_name","Query":"","Args":[],"MachineName":"collect_by_name","Duration":0}
+{"level":"info","msg":"Done with migration.","MachineName":"collect_by_name","Type":"Done","SetupDuration":0,"ProcessingDuration":0,"TotalDuration":0,"TotalProcessed":1}
 {"level":"debug","msg":"Number of items Argset will receive from collector.","TemCount:":1}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_using_collector","Print":"SCRIPT got 1 items in collection."}
-{"level":"debug","msg":"Migration query.","Count":2,"MachineName":"cassandra_to_cassandra_using_collector","Query":"UPDATE migration_sets SET ids = { 1 } WHERE system = ? AND name = ?","Args":["example","Test 1a from javascript!"]}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_using_collector","Print":"rec.system = example"}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_using_collector","Print":"rec.name = Test 3"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_using_collector","Print":"SCRIPT got 1 items in collection."}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":2,"MachineName":"cassandra_to_cassandra_using_collector","Query":"UPDATE migration_sets SET ids = { 1 } WHERE system = ? AND name = ?","Args":["example","Test 1a from javascript!"],"MachineName":"cassandra_to_cassandra_using_collector","Duration":0}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_using_collector","Print":"rec.system = example"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_using_collector","Print":"rec.name = Test 3"}
 {"level":"info","msg":"Running Migration","MachineName":"collect_by_name"}
 {"level":"info","msg":"Source query args expected.","MachineName":"collect_by_name","ExpectedNArgs":2,"ReceivedNArgs":2}
 {"level":"info","msg":"Source query.","SourceQuery":"SELECT name, id FROM migration_data_name WHERE system = ? AND name = ?","SourceArgs":["example","Test 3"]}
 {"level":"info","msg":"Migration DestinationDb","MachineName":"names_collector"}
 {"level":"info","msg":"Migration Driver","MachineName":"collector"}
-{"level":"info","msg":"Migrating data.","FromDb":"cassandra_dev","ToDb":"names_collector"}
-{"level":"debug","msg":"Migration query.","Count":1,"MachineName":"collect_by_name","Query":"","Args":[]}
-{"level":"info","msg":"Done with migration.","MachineName":"collect_by_name"}
+{"level":"info","msg":"Migrating data.","Type":"Start","FromDb":"cassandra_dev","ToDb":"names_collector","SetupDuration":0}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":1,"MachineName":"collect_by_name","Query":"","Args":[],"MachineName":"collect_by_name","Duration":0}
+{"level":"info","msg":"Done with migration.","MachineName":"collect_by_name","Type":"Done","SetupDuration":0,"ProcessingDuration":0,"TotalDuration":0,"TotalProcessed":1}
 {"level":"debug","msg":"Number of items Argset will receive from collector.","TemCount:":1}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_using_collector","Print":"SCRIPT got 1 items in collection."}
-{"level":"debug","msg":"Migration query.","Count":3,"MachineName":"cassandra_to_cassandra_using_collector","Query":"UPDATE migration_sets SET ids = { 3 } WHERE system = ? AND name = ?","Args":["example","Test 3"]}
-{"level":"info","msg":"Done with migration.","MachineName":"cassandra_to_cassandra_using_collector"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_using_collector","Print":"SCRIPT got 1 items in collection."}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":3,"MachineName":"cassandra_to_cassandra_using_collector","Query":"UPDATE migration_sets SET ids = { 3 } WHERE system = ? AND name = ?","Args":["example","Test 3"],"MachineName":"cassandra_to_cassandra_using_collector","Duration":0}
+{"level":"info","msg":"Done with migration.","MachineName":"cassandra_to_cassandra_using_collector","Type":"Done","SetupDuration":0,"ProcessingDuration":0,"TotalDuration":0,"TotalProcessed":3}

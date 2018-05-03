@@ -1,36 +1,34 @@
-{"level":"info","msg":"info logging enabled"}
-{"level":"info","msg":"info logging disabled"}
 {"level":"info","msg":"Running Migration","MachineName":"cassandra_to_cassandra_by_name"}
 {"level":"info","msg":"Source query args expected.","MachineName":"cassandra_to_cassandra_by_name","ExpectedNArgs":1,"ReceivedNArgs":1}
 {"level":"info","msg":"Source query.","SourceQuery":"SELECT system, name, id, description FROM migration_data WHERE system = ?;","SourceArgs":["example"]}
 {"level":"info","msg":"Migration DestinationDb","MachineName":"cassandra_dev"}
 {"level":"info","msg":"Migration Driver","MachineName":"cassandra"}
-{"level":"info","msg":"Migrating data.","FromDb":"cassandra_dev","ToDb":"cassandra_dev"}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 1"}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [5de7b9f5-1b96-4fee-ac7c-bad1eb9ad27b]"}
-{"level":"debug","msg":"Migration query.","Count":1,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Test 1a from javascript!","1","A"]}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 3"}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [8ed27311-fc4f-4bf6-89f3-6ef66560efdd]"}
-{"level":"debug","msg":"Migration query.","Count":2,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Test 3","3","G"]}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 4"}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [b7eb2a6a-7cc0-46ec-95d2-ff13502db2a8]"}
-{"level":"debug","msg":"Migration query.","Count":3,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Generic","4","A"]}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 5"}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [5bd90f01-ebaa-4c5b-be49-c7bbc47f750a]"}
-{"level":"debug","msg":"Migration query.","Count":4,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Generic","5","B"]}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 6"}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [b7b1dc89-6fed-4c42-a2fe-1cd71f65ddb8]"}
-{"level":"debug","msg":"Migration query.","Count":5,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Generic","6","C"]}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 7"}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [f45eb95d-2cc8-4350-893e-a9e65d43532a]"}
-{"level":"debug","msg":"Migration query.","Count":6,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Generic","7","D"]}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 8"}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [03eb18a9-bdc9-448d-9b12-247306815c98]"}
-{"level":"debug","msg":"Migration query.","Count":7,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Generic","8","E"]}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 9"}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [4523dc0f-b751-4567-93cc-2395e0f23ef6]"}
-{"level":"debug","msg":"Migration query.","Count":8,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Generic","9","F"]}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 10"}
-{"level":"debug","msg":"Script output.","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [31b9f0f0-ed09-4dc5-b975-463a5b19329d]"}
-{"level":"debug","msg":"Migration query.","Count":9,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Generic","10","G"]}
-{"level":"info","msg":"Done with migration.","MachineName":"cassandra_to_cassandra_by_name"}
+{"level":"info","msg":"Migrating data.","Type":"Start","FromDb":"cassandra_dev","ToDb":"cassandra_dev","SetupDuration":0}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 1"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [5de7b9f5-1b96-4fee-ac7c-bad1eb9ad27b]"}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":1,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Test 1a from javascript!","1","A"],"MachineName":"cassandra_to_cassandra_by_name","Duration":0}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 3"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [8ed27311-fc4f-4bf6-89f3-6ef66560efdd]"}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":2,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Test 3","3","G"],"MachineName":"cassandra_to_cassandra_by_name","Duration":0}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 4"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [b7eb2a6a-7cc0-46ec-95d2-ff13502db2a8]"}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":3,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Generic","4","A"],"MachineName":"cassandra_to_cassandra_by_name","Duration":0}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 5"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [5bd90f01-ebaa-4c5b-be49-c7bbc47f750a]"}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":4,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Generic","5","B"],"MachineName":"cassandra_to_cassandra_by_name","Duration":0}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 6"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [b7b1dc89-6fed-4c42-a2fe-1cd71f65ddb8]"}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":5,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Generic","6","C"],"MachineName":"cassandra_to_cassandra_by_name","Duration":0}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 7"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [f45eb95d-2cc8-4350-893e-a9e65d43532a]"}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":6,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Generic","7","D"],"MachineName":"cassandra_to_cassandra_by_name","Duration":0}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 8"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [03eb18a9-bdc9-448d-9b12-247306815c98]"}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":7,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Generic","8","E"],"MachineName":"cassandra_to_cassandra_by_name","Duration":0}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 9"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [4523dc0f-b751-4567-93cc-2395e0f23ef6]"}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":8,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Generic","9","F"],"MachineName":"cassandra_to_cassandra_by_name","Duration":0}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"processing id: 10"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"cassandra_to_cassandra_by_name","Print":"GOT PERSIST VAL: [31b9f0f0-ed09-4dc5-b975-463a5b19329d]"}
+{"level":"debug","msg":"Status","Type":"MigrationStatus","Count":9,"MachineName":"cassandra_to_cassandra_by_name","Query":"INSERT INTO migration_data_name (system, name, id, description) VALUES(?,?,?,?)","Args":["example","Generic","10","G"],"MachineName":"cassandra_to_cassandra_by_name","Duration":0}
+{"level":"info","msg":"Done with migration.","MachineName":"cassandra_to_cassandra_by_name","Type":"Done","SetupDuration":0,"ProcessingDuration":0,"TotalDuration":0,"TotalProcessed":9}
