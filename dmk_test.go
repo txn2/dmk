@@ -56,6 +56,7 @@ func TestCliGoldenArgs(t *testing.T) {
 				"run",
 				"-v", // verbose
 				"-n", // disable timestamps for deterministic output.
+				"-l", // log out (log to standard out)
 				"example_csv_to_cassandra", // migration
 			}, "example_csv_to_cassandra.golden",
 		},
@@ -66,6 +67,7 @@ func TestCliGoldenArgs(t *testing.T) {
 				"run",
 				"-v", // verbose
 				"-n", // disable timestamps for deterministic output.
+				"-l", // log out (log to standard out)
 				"cassandra_to_cassandra_by_name", // migration
 				"example",                        // expected argument
 			}, "cassandra_to_cassandra_by_name.golden",
@@ -77,6 +79,7 @@ func TestCliGoldenArgs(t *testing.T) {
 				"run",
 				"-v", // verbose
 				"-n", // disable timestamps for deterministic output.
+				"-l", // log out (log to standard out)
 				"cassandra_to_cassandra_name_lookup", // migration
 				"example", // expected argument
 			}, "cassandra_to_cassandra_name_lookup.golden",
@@ -88,6 +91,7 @@ func TestCliGoldenArgs(t *testing.T) {
 				"run",
 				"-v", // verbose
 				"-n", // disable timestamps for deterministic output.
+				"-l", // log out (log to standard out)
 				"cassandra_to_cassandra_using_collector", // migration
 				"example", // expected argument
 			}, "cassandra_to_cassandra_using_collector.golden",
@@ -112,7 +116,6 @@ func TestCliGoldenArgs(t *testing.T) {
 			}
 		}
 
-		// TODO Test file
 		g, err := ioutil.ReadFile(gp)
 		if err != nil {
 			t.Fatalf("failed reading .golden: %s", err)

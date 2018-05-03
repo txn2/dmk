@@ -4,13 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"log"
-
-	"sync"
-
 	"github.com/desertbit/grumble"
-	"github.com/jroimartin/gocui"
 	"github.com/txn2/dmk/migrate"
+	"github.com/txn2/dmk/tui"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -48,83 +44,6 @@ func init() {
 
 }
 
-// GuiDataCfg
-type GuiDataCfg struct {
-	machineName string
-	fl          *os.File
-}
-
-// guiData
-type guiData struct {
-	cfg *GuiDataCfg
-}
-
-// NewGui creates a CLI GUI for migration data
-func NewGui(cfg *GuiDataCfg) (*guiData, *sync.WaitGroup) {
-	gui := &guiData{
-		cfg: cfg,
-	}
-
-	wg := sync.WaitGroup{}
-
-	wg.Add(1)
-	go func(group *sync.WaitGroup) {
-		g, err := gocui.NewGui(gocui.OutputNormal)
-		if err != nil {
-			log.Panicln(err)
-		}
-		defer g.Close()
-
-		g.SetManagerFunc(guiLayout)
-
-		if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, guiQuit); err != nil {
-			log.Panicln(err)
-		}
-
-		if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
-			log.Panicln(err)
-		}
-
-		group.Done()
-	}(&wg)
-
-	return gui, &wg
-}
-
-// guiLayout
-func guiLayout(g *gocui.Gui) error {
-	maxX, maxY := g.Size()
-	if v, err := g.SetView("hello", maxX/2-7, maxY/2, maxX/2+7, maxY/2+2); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		fmt.Fprintln(v, "Hello world!")
-	}
-	return nil
-}
-
-// guiQuit
-func guiQuit(g *gocui.Gui, v *gocui.View) error {
-	return gocui.ErrQuit
-}
-
-// Write implements SyncWriter
-func (g *guiData) Write(p []byte) (nn int, err error) {
-
-	if g.cfg.fl != nil {
-		g.cfg.fl.Write(p)
-	}
-
-	//log.Printf("Line: %s", p)
-	return
-}
-
-// Sync implements SyncWriter
-func (g *guiData) Sync() error {
-	g.cfg.fl.Sync()
-	return nil
-}
-
 // runMigration
 func runMigration(machineName string, f grumble.FlagMap, args []string) {
 
@@ -135,18 +54,21 @@ func runMigration(machineName string, f grumble.FlagMap, args []string) {
 		encoderCfg.TimeKey = "" // disable timestamps for deterministic output.
 	}
 
-	// log gui data to a file
-	fl, err := fileLog(machineName)
-	if err != nil {
-		panic(err)
-	}
-	defer fl.Close()
+	var out zapcore.WriteSyncer
+	out = zapcore.Lock(os.Stdout)
 
-	gui, wg := NewGui(&GuiDataCfg{machineName, fl})
-	out := zapcore.Lock(gui)
+	if f.Bool("log-out") != true {
+		// log gui data to a file
+		fl, err := fileLog(machineName)
+		if err != nil {
+			panic(err)
+		}
+		defer fl.Close()
 
-	if f.Bool("log-out") {
-		out = zapcore.Lock(os.Stdout)
+		gui, wg := tui.NewGui(&tui.GuiDataCfg{machineName, fl})
+		defer wg.Wait()
+
+		out = gui //zapcore.Lock(gui)
 	}
 
 	logger := zap.New(zapcore.NewCore(
@@ -170,12 +92,9 @@ func runMigration(machineName string, f grumble.FlagMap, args []string) {
 	}
 
 	rnr := migrate.NewRunner(runnerCfg)
-
-	// todo: display stats when the result becomes useful
-	_, err = rnr.Run(machineName, args)
+	_, err := rnr.Run(machineName, args)
 	if err != nil {
 		Cli.PrintError(err)
 	}
 
-	wg.Wait()
 }
