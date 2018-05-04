@@ -1,17 +1,17 @@
-{"level":"info","msg":"Running Migration","MachineName":"example_csv_to_cassandra"}
-{"level":"info","msg":"Source query args expected.","MachineName":"example_csv_to_cassandra","ExpectedNArgs":0,"ReceivedNArgs":0}
-{"level":"info","msg":"Source query.","SourceQuery":"*","SourceArgs":[]}
-{"level":"info","msg":"Migration DestinationDb","MachineName":"cassandra_dev"}
-{"level":"info","msg":"Migration Driver","MachineName":"cassandra"}
-{"level":"info","msg":"Migrating data.","Type":"Start","FromDb":"example_csv_data","ToDb":"cassandra_dev","SetupDuration":0}
-{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"example_csv_to_cassandra","Print":"Im Javascript inside the DMK!"}
-{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"example_csv_to_cassandra","Print":"Record NameTest 1a id: 1"}
-{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"example_csv_to_cassandra","Print":"Someval: 1"}
+{"level":"info","msg":"Running Migration","Type":"Setup","MachineName":"example_csv_to_cassandra"}
+{"level":"info","msg":"Source query args expected.","Type":"Setup","MachineName":"example_csv_to_cassandra","ExpectedNArgs":0,"ReceivedNArgs":0}
+{"level":"info","msg":"Source query.","Type":"Setup","SourceQuery":"*","SourceArgs":[]}
+{"level":"info","msg":"Migration DestinationDb","Type":"Setup","MachineName":"cassandra_dev"}
+{"level":"info","msg":"Migration Driver","Type":"Setup","MachineName":"cassandra"}
+{"level":"info","msg":"Start migrating data.","Type":"Setup","FromDb":"example_csv_data","ToDb":"cassandra_dev","SetupDuration":0}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"example_csv_to_cassandra","ScriptPrint":"Im Javascript inside the DMK!"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"example_csv_to_cassandra","ScriptPrint":"Record NameTest 1a id: 1"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"example_csv_to_cassandra","ScriptPrint":"Someval: 1"}
 {"level":"debug","msg":"Status","Type":"MigrationStatus","Count":1,"MachineName":"example_csv_to_cassandra","Query":"INSERT INTO migration_data JSON '{\"system\": \"example\", \"id\": \"1\", \"name\": \"Test 1a from javascript!\", \"description\": \"A\"}'","Args":[],"MachineName":"example_csv_to_cassandra","Duration":0}
-{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"example_csv_to_cassandra","Print":"Im Javascript inside the DMK!"}
-{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"example_csv_to_cassandra","Print":"Record NameTest 2 id: 2"}
-{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"example_csv_to_cassandra","Print":"Someval: 2"}
-{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"example_csv_to_cassandra","Print":"Record id is 2 so let's skip it"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"example_csv_to_cassandra","ScriptPrint":"Im Javascript inside the DMK!"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"example_csv_to_cassandra","ScriptPrint":"Record NameTest 2 id: 2"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"example_csv_to_cassandra","ScriptPrint":"Someval: 2"}
+{"level":"debug","msg":"Script output.","Type":"ScriptOutput","MachineName":"example_csv_to_cassandra","ScriptPrint":"Record id is 2 so let's skip it"}
 {"level":"debug","msg":"Status","Type":"MigrationStatus","Count":3,"MachineName":"example_csv_to_cassandra","Query":"INSERT INTO migration_data JSON '{\"system\": \"example\", \"id\": \"3\", \"name\": \"Test 3\", \"description\": \"G\"}'","Args":[],"MachineName":"example_csv_to_cassandra","Duration":0}
 {"level":"debug","msg":"Status","Type":"MigrationStatus","Count":4,"MachineName":"example_csv_to_cassandra","Query":"INSERT INTO migration_data JSON '{\"system\": \"example\", \"id\": \"4\", \"name\": \"Generic\", \"description\": \"A\"}'","Args":[],"MachineName":"example_csv_to_cassandra","Duration":0}
 {"level":"debug","msg":"Status","Type":"MigrationStatus","Count":5,"MachineName":"example_csv_to_cassandra","Query":"INSERT INTO migration_data JSON '{\"system\": \"example\", \"id\": \"5\", \"name\": \"Generic\", \"description\": \"B\"}'","Args":[],"MachineName":"example_csv_to_cassandra","Duration":0}
