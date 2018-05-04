@@ -23,6 +23,7 @@ func init() {
 			f.Bool("v", "verbose", false, "Verbose output.")
 			f.Bool("n", "no-time", false, "Disable timestamps and duration for deterministic output.")
 			f.Bool("l", "log-out", false, "No GUI and no log file. Log standard out.")
+			f.Bool("q", "quiet", false, "No file logging. Sample status.")
 		},
 		Run: func(c *grumble.Context) error {
 			if ok := activeProjectCheck(); ok {
@@ -57,14 +58,18 @@ func runMigration(machineName string, f grumble.FlagMap, args []string) {
 	var out zapcore.WriteSyncer
 	out = zapcore.Lock(os.Stdout)
 
-	if f.Bool("log-out") != true {
+	var fl *os.File
+
+	if f.Bool("log-out") != true && f.Bool("quiet") != true {
 		// log gui data to a file
 		fl, err := fileLog(machineName)
 		if err != nil {
 			panic(err)
 		}
 		defer fl.Close()
+	}
 
+	if f.Bool("log-out") != true {
 		gui, wg := tui.NewGui(&tui.GuiDataCfg{machineName, fl})
 		defer wg.Wait()
 
@@ -88,6 +93,7 @@ func runMigration(machineName string, f grumble.FlagMap, args []string) {
 		NoTime:        f.Bool("no-time"),
 		DryRun:        f.Bool("dry-run"),
 		Verbose:       f.Bool("verbose"),
+		Quiet:         f.Bool("quiet"),
 		Logger:        logger,
 	}
 

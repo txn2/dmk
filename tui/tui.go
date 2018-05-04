@@ -135,7 +135,6 @@ func (g *guiData) Write(p []byte) (nn int, err error) {
 	}
 
 	// add to buffer and update views
-	//if sm.Type == "MigrationStatus" {
 	g.ui.Update(func(gui *gocui.Gui) error {
 		v, err := gui.View("status_log")
 		if err != nil {
@@ -145,7 +144,6 @@ func (g *guiData) Write(p []byte) (nn int, err error) {
 		fmt.Fprintf(v, "\n %25s| %06d| %35s|"+grey(" Args:")+" %v", yellow(sm.Type), g.count, sm.Msg, sm.Args)
 		return nil
 	})
-	//}
 
 	if sm.Type == "ScriptOutput" {
 		count := g.count

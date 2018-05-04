@@ -42,6 +42,7 @@ type RunnerCfg struct {
 	Project       Project
 	DriverManager *driver.Manager
 	TunnelManager tunnel.Manager
+	Quiet         bool // Fast mode (no file log / sampled status)
 	DryRun        bool
 	Verbose       bool
 	NoTime        bool   // Disable timestamps and duration for deterministic output
