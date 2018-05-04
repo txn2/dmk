@@ -54,3 +54,18 @@ type Tunnel struct {
 	Remote     Endpoint
 	TunnelAuth TunnelAuth `yaml:"tunnelAuth"`
 }
+
+// migrationLog file writer
+type MigrationLog struct {
+	Path string
+}
+
+func (lm *MigrationLog) Write(p []byte) (nn int, err error) {
+
+	return
+}
+
+func (g *MigrationLog) Sync() error {
+	// close
+	return nil
+}

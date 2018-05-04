@@ -10,7 +10,7 @@ import (
 
 	"strings"
 
-	"log"
+	"os"
 
 	"github.com/Masterminds/sprig"
 	"github.com/boltdb/bolt"
@@ -20,6 +20,8 @@ import (
 	"github.com/txn2/dmk/cfg"
 	"github.com/txn2/dmk/driver"
 	"github.com/txn2/dmk/tunnel"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // A Runner runs a Migration consisting of a
@@ -35,56 +37,66 @@ import (
 // 2) Each source result becomes transformed data (map[string]interface) and is then used as arguments along with
 // a query against the destination database.
 
-// Runner runs migrations for a project.
+// Runner runs migrations.
 type RunnerCfg struct {
 	Project       Project
 	DriverManager *driver.Manager
 	TunnelManager tunnel.Manager
+	Quiet         bool // Fast mode (no file log / sampled status)
 	DryRun        bool
 	Verbose       bool
+	NoTime        bool   // Disable timestamps and duration for deterministic output
+	Limit         int    // Limit the number of records to process
 	Path          string // relative path to config
+	Logger        *zap.Logger
 }
 
-// RunResult is returned by the Run method
-type RunResult struct {
-	MachineName       string
-	SourceArgs        []string
-	DestinationDriver *driver.Driver
-	SourceDriver      *driver.Driver
-	Done              chan bool
-	Error             chan error
-	Status            chan RunStatus
-}
-
-// RunStatus
-type RunStatus struct {
-	Count int
-	Msg   string
-}
-
-// runner runs migrations for a project with the Run method.
+// see NewRunner
 type runner struct {
-	cfg      RunnerCfg
-	drivers  map[string]driver.Driver // store configured drivers
-	localDbs map[string]*bolt.DB      // local bold databases for value mapping
+	Cfg     RunnerCfg
+	Log     *zap.Logger
+	drivers map[string]driver.Driver // store configured drivers
 }
 
-// NewRunner configures and returns a new runner
+var localDbs map[string]*bolt.DB // local bold databases for value mapping
+
+// NewRunner creates and configures a new runner
 func NewRunner(cfg RunnerCfg) *runner {
 
-	runner := &runner{
-		cfg: cfg,
+	logger := cfg.Logger
+
+	if logger == nil {
+		atom := zap.NewAtomicLevel()
+		encoderCfg := zap.NewProductionEncoderConfig()
+
+		if cfg.NoTime {
+			// disable timestamps for deterministic output.
+			encoderCfg.TimeKey = ""
+		}
+		logger = zap.New(zapcore.NewCore(
+			zapcore.NewJSONEncoder(encoderCfg),
+			zapcore.Lock(os.Stdout),
+			atom,
+		))
+
+		atom.SetLevel(zap.DebugLevel)
+		defer logger.Sync()
 	}
 
-	return runner
+	rnr := &runner{
+		Cfg: cfg,
+		Log: logger,
+	}
+
+	return rnr
 }
 
 // getLocalDb gets the database
 func (r *runner) getLocalDb(migration string) (*bolt.DB, error) {
 	// one database per migration (to avoid dealing with multiple writers)
-	dbFile := r.cfg.Path + r.cfg.Project.Component.MachineName + "-" + migration + ".db"
+	dbFile := r.Cfg.Path + r.Cfg.Project.Component.MachineName + "-" + migration + ".db"
 
-	if db, ok := r.localDbs[dbFile]; ok {
+	if db, ok := localDbs[dbFile]; ok {
 		return db, nil
 	}
 
@@ -93,10 +105,10 @@ func (r *runner) getLocalDb(migration string) (*bolt.DB, error) {
 		return nil, err
 	}
 
-	if r.localDbs == nil {
-		r.localDbs = make(map[string]*bolt.DB, 1)
+	if localDbs == nil {
+		localDbs = make(map[string]*bolt.DB, 1)
 	}
-	r.localDbs[dbFile] = db
+	localDbs[dbFile] = db
 
 	return db, nil
 }
@@ -117,7 +129,7 @@ func (r *runner) configureDriver(migration string, db cfg.Database) (driver.Driv
 	}
 
 	// get a driver of the specified type
-	d, err := r.cfg.DriverManager.GetNewDriver(db.Driver)
+	d, err := r.Cfg.DriverManager.GetNewDriver(db.Driver)
 	if err != nil {
 		return nil, err
 	}
@@ -139,8 +151,8 @@ func (r *runner) configureDriver(migration string, db cfg.Database) (driver.Driv
 func (r *runner) tunnel(database cfg.Database) error {
 	// setup a tunnel if needed
 	if database.Tunnel != "" {
-		if tunnelCfg, ok := r.cfg.Project.Tunnels[database.Tunnel]; ok {
-			err := r.cfg.TunnelManager.Tunnel(tunnelCfg)
+		if tunnelCfg, ok := r.Cfg.Project.Tunnels[database.Tunnel]; ok {
+			err := r.Cfg.TunnelManager.Tunnel(tunnelCfg)
 			if err != nil {
 				return err
 			}
@@ -155,134 +167,149 @@ func (r *runner) tunnel(database cfg.Database) error {
 	return nil
 }
 
-// Run runs a migration
-func (r *runner) RunAsync(machineName string, sourceArgs []string) (*RunResult, error) {
-	doneChan := make(chan bool)
-	errorChan := make(chan error)
-	statusChan := make(chan RunStatus)
+// RunResult is returned by the Run method
+type RunResult struct {
+	MachineName       string
+	SourceArgs        []string
+	DestinationDriver *driver.Driver
+	SourceDriver      *driver.Driver
+	Started           time.Time
+	Count             int
+	Duration          time.Duration
+}
 
-	//	doneChan <- false
+// Run runs a migration
+func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error) {
+	migrationStart := time.Now()
 
 	runResult := &RunResult{
 		MachineName: machineName,
 		SourceArgs:  sourceArgs,
-		Done:        doneChan,
-		Error:       errorChan,
-		Status:      statusChan,
+		Started:     migrationStart,
 	}
 
-	go r.run(runResult)
-
-	return runResult, nil
-}
-
-// run a migration (see RunAsync)
-func (r *runner) run(runResult *RunResult) {
-	machineName := runResult.MachineName
-	sourceArgs := runResult.SourceArgs
-
-	runResult.Status <- RunStatus{0, fmt.Sprintln("Running Migration: " + machineName)}
-
-	if r.cfg.DryRun {
-		runResult.Status <- RunStatus{0, fmt.Sprintf("\n>> This is a DRY RUN. No data will be migrated. <<\n\n")}
-	}
+	r.Log.Info("Running Migration",
+		zap.String("Type", "Setup"),
+		zap.String("MachineName", machineName),
+	)
 
 	// get the migration
-	migration, ok := r.cfg.Project.Migrations[machineName]
+	migration, ok := r.Cfg.Project.Migrations[machineName]
 	if ok != true {
-		runResult.Error <- errors.New("no migration found for " + machineName)
-		return
+		r.Log.Error("migration: no migration found.",
+			zap.String("Type", "Setup"), zap.String("MachineName", machineName))
+		return runResult, errors.New("no migration found for " + machineName)
 	}
 
 	// get the source db
-	sourceDb, ok := r.cfg.Project.Databases[migration.SourceDb]
+	sourceDb, ok := r.Cfg.Project.Databases[migration.SourceDb]
 	if ok != true {
-		runResult.Error <- errors.New("no source database found for " + migration.SourceDb)
-		return
+		r.Log.Error("sourceDb: no source database found. ",
+			zap.String("Type", "Setup"), zap.String("MachineName", migration.SourceDb))
+		return runResult, errors.New("no source database found for " + migration.SourceDb)
 	}
 
 	err := r.tunnel(sourceDb)
 	if err != nil {
-		runResult.Error <- errors.New("unable to tunnel for " + sourceDb.Component.Name)
-		return
+		r.Log.Error("TunnelError", zap.String("Type", "Setup"), zap.Error(err))
+		return runResult, errors.New("unable to tunnel for " + sourceDb.Component.Name)
 	}
 
 	// get a driver for the source of migration
 	sourceDriver, err := r.configureDriver(machineName, sourceDb)
 	if err != nil {
-		runResult.Error <- err
-		return
+		r.Log.Error("sourceDriver",
+			zap.String("Type", "Setup"), zap.Error(err))
+		return runResult, err
 	}
 
 	// set a pointer to the source driver in the run result
 	runResult.SourceDriver = &sourceDriver
 
-	runResult.Status <- RunStatus{0, fmt.Sprintf("%s source query expects %d args.\n", machineName, migration.SourceQueryNArgs)}
-	runResult.Status <- RunStatus{0, fmt.Sprintf("%s received %d args.\n", machineName, len(sourceArgs))}
+	r.Log.Info("Source query args expected.",
+		zap.String("Type", "Setup"),
+		zap.String("MachineName", machineName),
+		zap.Int("ExpectedNArgs", migration.SourceQueryNArgs),
+		zap.Int("ReceivedNArgs", len(sourceArgs)),
+	)
 
 	if migration.SourceQueryNArgs != len(sourceArgs) {
-		runResult.Error <- fmt.Errorf("expecting %d args and got %d", migration.SourceQueryNArgs, len(sourceArgs))
-		return
+		r.Log.Error("Unexpected number or arguments received",
+			zap.String("Type", "Setup"),
+			zap.Int("ExpectedArgs", migration.SourceQueryNArgs),
+			zap.Int("ReceivedArgs", len(sourceArgs)),
+		)
+		return runResult, fmt.Errorf("expecting %d args and got %d", migration.SourceQueryNArgs, len(sourceArgs))
 	}
 
-	// Source data collection.
-	// do we have the requested number of args
-	runResult.Status <- RunStatus{0, fmt.Sprintf("Migration %s Source Query: %s\n", machineName, strings.Trim(migration.SourceQuery, "\n"))}
-	runResult.Status <- RunStatus{0, fmt.Sprintf("Migration %s Source Args: %s\n", machineName, sourceArgs)}
+	r.Log.Info("Source query.",
+		zap.String("Type", "Setup"),
+		zap.String("SourceQuery", strings.Trim(migration.SourceQuery, "\n")),
+		zap.Strings("SourceArgs", sourceArgs),
+	)
 
 	sourceRecordChan, err := sourceDriver.Out(migration.SourceQuery, sourceArgs)
 	if err != nil {
-		runResult.Error <- err
-		return
+		r.Log.Error("sourceDriver.Out",
+			zap.String("Type", "Setup"), zap.Error(err))
+		return runResult, err
 	}
 
-	runResult.Status <- RunStatus{0, fmt.Sprintf("Migration DestinationDb: %s\n", migration.DestinationDb)}
+	r.Log.Info("Migration DestinationDb",
+		zap.String("Type", "Setup"),
+		zap.String("MachineName", migration.DestinationDb),
+	)
 
-	destinationDb, ok := r.cfg.Project.Databases[migration.DestinationDb]
+	destinationDb, ok := r.Cfg.Project.Databases[migration.DestinationDb]
 	if ok != true {
-		runResult.Error <- err
-		return
+		r.Log.Error("destinationDb: no destination database found.",
+			zap.String("Type", "Setup"), zap.String("MachineName", migration.DestinationDb))
+		return runResult, errors.New("no destination database found for " + migration.DestinationDb)
 	}
 
-	// get the destination driver
-	runResult.Status <- RunStatus{0, fmt.Sprintf("Migration Driver: %s\n", destinationDb.Driver)}
+	r.Log.Info("Migration Driver",
+		zap.String("Type", "Setup"),
+		zap.String("MachineName", destinationDb.Driver))
 
 	destinationDriver, err := r.configureDriver(machineName, destinationDb)
 	if err != nil {
-		runResult.Error <- err
-		return
+		return runResult, err
 	}
 	runResult.DestinationDriver = &destinationDriver
 
 	// javascript transformation script
 	script := migration.TransformationScript
 
-	var ctx *candyjs.Context
-
-	if script != "" {
-		// Javascript engine,
-		// see http://duktape.org/ and https://github.com/olebedev/go-duktape
-		// see https://github.com/mcuadros/go-candyjs
-		ctx = candyjs.NewContext()
-
-		defer ctx.DestroyHeap()
-		r.addScriptFunctions(*ctx, machineName)
-	}
+	// Javascript engine,
+	// see http://duktape.org/ and https://github.com/olebedev/go-duktape
+	// see https://github.com/mcuadros/go-candyjs
+	ctx := candyjs.NewContext()
+	defer ctx.DestroyHeap()
+	r.addScriptFunctions(*ctx, machineName)
 
 	queryTemplate, err := template.New("query").Funcs(sprig.TxtFuncMap()).Parse(migration.DestinationQuery)
 	if err != nil {
-		// we have no intention from recovering from this.
-		// todo: determine why we failed.
 		panic(err)
 	}
 
-	runResult.Status <- RunStatus{0, fmt.Sprintf("Migrating data from %s to %s.\n", migration.SourceDb, migration.DestinationDb)}
+	setupDuration := time.Now().Sub(migrationStart)
+	if r.Cfg.NoTime {
+		setupDuration = 0
+	}
+
+	r.Log.Info("Start migrating data.",
+		zap.String("Type", "Setup"),
+		zap.String("FromDb", migration.SourceDb),
+		zap.String("ToDb", migration.DestinationDb),
+		zap.Duration("SetupDuration", setupDuration),
+	)
 
 	count := 0
+
 	// iterate over the sourceRecordChan for driver.Record objects
 	for record := range sourceRecordChan {
-
 		count += 1
+		recordStart := time.Now()
 
 		args := make([]string, 0)
 
@@ -311,48 +338,95 @@ func (r *runner) run(runResult *RunResult) {
 				endMigration = true
 			})
 
-			// Evaluate the javascript script
 			ctx.EvalString(script)
 
 			// If the transformation script wants us to skip this record
 			if skipRecord {
-				runResult.Status <- RunStatus{count, fmt.Sprintf("Migration script wants to skip this record.\n")}
 				continue
 			}
 
-			// If the transformation script wants us to the the migration
+			// If the transformation script wants us to skip this record
 			if endMigration {
-				runResult.Status <- RunStatus{count, fmt.Sprintf("Migration script is terminating migration.\n")}
-				runResult.Done <- true
-				return
+				return runResult, nil
 			}
 		}
 
-		if r.cfg.DryRun {
+		if r.Cfg.DryRun {
 			continue
 		}
 
 		var query bytes.Buffer
 		err = queryTemplate.Execute(&query, record)
 		if err != nil {
-			runResult.Error <- err
-			runResult.Done <- true
-			return
+			return runResult, err
 		}
 
-		runResult.Status <- RunStatus{count, fmt.Sprintf("Migration %s Destination Args: %s\n", machineName, args)}
+		recDuration := time.Now().Sub(recordStart)
+		if r.Cfg.NoTime {
+			recDuration = 0
+		}
 
 		err = destinationDriver.In(query.String(), args, record)
 		if err != nil {
-			runResult.Error <- err
-			runResult.Done <- true
-			return
+			r.Log.Error("MigrationError",
+				zap.Error(err),
+				zap.Int("Count", count),
+				zap.String("MachineName", machineName),
+				zap.String("Query", strings.Trim(query.String(), "\n")),
+				zap.Strings("Args", args),
+				zap.String("MachineName", machineName),
+				zap.Duration("Duration", recDuration),
+			)
+			return runResult, err
 		}
+
+		r.Log.Debug("Status",
+			zap.String("Type", "MigrationStatus"),
+			zap.Int("Count", count),
+			zap.String("MachineName", machineName),
+			zap.String("Query", strings.Trim(query.String(), "\n")),
+			zap.Strings("Args", args),
+			zap.String("MachineName", machineName),
+			zap.Duration("Duration", recDuration),
+		)
+
+		if r.Cfg.Limit > 0 && r.Cfg.Limit <= count {
+			r.Log.Debug("Stopping at specified limit.",
+				zap.String("Type", "Done"),
+				zap.Int("Count", count),
+				zap.String("MachineName", machineName),
+				zap.String("Query", strings.Trim(query.String(), "\n")),
+				zap.Strings("Args", args),
+				zap.String("MachineName", machineName),
+				zap.Duration("Duration", recDuration),
+			)
+			break
+		}
+
 	}
 
 	destinationDriver.Done()
-	runResult.Status <- RunStatus{count, fmt.Sprintf("Done with migration %s\n", migration.Component.MachineName)}
-	runResult.Done <- true
+
+	t := time.Now()
+	elapsed := t.Sub(migrationStart)
+	processingDuration := elapsed - setupDuration
+
+	if r.Cfg.NoTime {
+		setupDuration, elapsed, processingDuration = 0, 0, 0
+	}
+
+	r.Log.Info("Done with migration.",
+		zap.String("MachineName", migration.Component.MachineName),
+		zap.String("Type", "Done"),
+		zap.Duration("SetupDuration", setupDuration),
+		zap.Duration("ProcessingDuration", processingDuration),
+		zap.Duration("TotalDuration", elapsed),
+		zap.Int("TotalProcessed", count),
+	)
+
+	runResult.Duration = elapsed
+
+	return runResult, nil
 }
 
 // addScriptFunctions add utility functions to script context
@@ -386,11 +460,19 @@ func (r *runner) addScriptFunctions(ctx candyjs.Context, machineName string) {
 
 	ctx.PushGlobalGoFunction("dump", func(obj interface{}) {
 		sd := spew.Sdump(obj)
-		log.Printf("<script dump> %s: %s", machineName, sd)
+		r.Log.Debug("Script object dump.",
+			zap.String("Type", "ScriptOutput"),
+			zap.String("MachineName", machineName),
+			zap.String("Dump", sd),
+		)
 	})
 
 	ctx.PushGlobalGoFunction("print", func(obj interface{}) {
-		log.Printf("<script message> %s: %s", machineName, obj)
+		r.Log.Debug("Script output.",
+			zap.String("Type", "ScriptOutput"),
+			zap.String("MachineName", machineName),
+			zap.Any("ScriptPrint", obj),
+		)
 	})
 }
 
@@ -440,48 +522,25 @@ func (r *runner) persistVal(migration string, k string, fallback string) string 
 }
 
 // scriptRunner returns run function for script context
-func (r *runner) scriptRunner(machineNameFromScript string, argsFromScript []string, cb func(string)) []driver.ResultCollectionItem {
-	// the callback is optional for javascript
-	if cb == nil {
-		cb = func(string) {
-			// suppress
-		}
-	}
-
-	runResult, err := r.RunAsync(machineNameFromScript, argsFromScript)
+func (r *runner) scriptRunner(machineNameFromScript string, argsFromScript []string) []driver.ResultCollectionItem {
+	runResult, err := r.Run(machineNameFromScript, argsFromScript)
 	if err != nil {
-		cb(fmt.Sprintf("ERROR: %s\n", err.Error()))
-	}
-
-	// script run migrations are synchronous so we need to
-	// wait for done
-	cb(fmt.Sprintf("Run migration called from script. Running...\n"))
-
-migrationOut:
-	for {
-		select {
-		case <-runResult.Done:
-			cb(fmt.Sprintf("[%s]: Done", machineNameFromScript))
-			break migrationOut
-		case msg := <-runResult.Status:
-			cb(fmt.Sprintf("[%s]: %s", machineNameFromScript, msg))
-		case err := <-runResult.Error:
-			cb(fmt.Sprintf("ERROR [%s]: %s", machineNameFromScript, err.Error()))
-		}
+		fmt.Printf("ERROR: %s\n", err.Error())
 	}
 
 	dd := *runResult.DestinationDriver
 
 	if cdd, ok := dd.(*driver.Collector); ok {
 		collection := cdd.GetCollection()
-		if r.cfg.Verbose {
-			cb(fmt.Sprintf("Argset will receive %d items from collector.", len(collection)))
-		}
+
+		r.Log.Debug("Number of items Argset will receive from collector.",
+			zap.Int("TemCount:", len(collection)))
 
 		return collection
 	}
 
-	cb(fmt.Sprintf("WARNING: run() for %s executed from a script but did not output to a collector.", machineNameFromScript))
+	r.Log.Info("WARNING: run() for %s executed from a script but did not output to a collector.",
+		zap.String("MachineName", machineNameFromScript))
 
 	return []driver.ResultCollectionItem{}
 }
