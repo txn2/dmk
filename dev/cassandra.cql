@@ -65,3 +65,11 @@ CREATE TABLE IF NOT exists example_scr.verses (
   verse_text text,
   PRIMARY KEY(system, book_id, chapter, verse_num)
 );
+
+CREATE TABLE IF NOT exists example_scr.cross_ref (
+  system text,
+  verse_id int,
+  verse_ref_id int,
+  PRIMARY KEY(system, verse_id, verse_ref_id)
+);
+

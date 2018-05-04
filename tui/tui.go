@@ -5,14 +5,14 @@ import (
 	"log"
 	"os"
 	"sync"
-
-	"encoding/json"
-
 	"time"
 
 	"github.com/fatih/color"
 	"github.com/jroimartin/gocui"
+	"github.com/json-iterator/go"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 var yellow = color.New(color.FgYellow).SprintFunc()
 var green = color.New(color.FgGreen).SprintFunc()
@@ -22,6 +22,8 @@ var grey = color.New(color.FgBlack).SprintFunc()
 type GuiDataCfg struct {
 	MachineName string
 	Fl          *os.File
+	Quiet       bool
+	Done        bool
 }
 
 // guiData
@@ -33,6 +35,8 @@ type guiData struct {
 	count     int
 	d         time.Duration
 	start     time.Time
+	writes    int
+	prevWrite []byte
 }
 
 // NewGui creates a CLI GUI for migration data
@@ -48,6 +52,7 @@ func NewGui(cfg *GuiDataCfg) (*guiData, *sync.WaitGroup) {
 		statusOut: []string{},
 		total:     0,
 		count:     0,
+		writes:    0,
 		start:     time.Now(),
 	}
 
@@ -61,6 +66,30 @@ func NewGui(cfg *GuiDataCfg) (*guiData, *sync.WaitGroup) {
 
 		if err := g.SetKeybinding("", gocui.KeyCtrlQ, gocui.ModNone, guiQuit); err != nil {
 			log.Panicln(err)
+		}
+
+		if cfg.Quiet {
+			g.Update(func(gui *gocui.Gui) error {
+				viewSo, err := gui.View("script_out")
+				if err != nil {
+					panic(err)
+				}
+
+				viewSl, err := gui.View("status_log")
+				if err != nil {
+					panic(err)
+				}
+
+				viewSts, err := gui.View("stats")
+				if err != nil {
+					panic(err)
+				}
+
+				fmt.Fprint(viewSo, grey(" Quiet mode."))
+				fmt.Fprint(viewSl, grey(" Quiet mode."))
+				fmt.Fprint(viewSts, grey("\n Quiet mode."))
+				return nil
+			})
 		}
 
 		if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
@@ -111,18 +140,19 @@ func guiQuit(g *gocui.Gui, v *gocui.View) error {
 
 // StatusMessage
 type StatusMessage struct {
-	Level       string
-	Ts          float64
-	Msg         string
-	Type        string
-	MachineName string
-	ScriptPrint string
-	Args        []string
-	Count       int
+	Level       string   `json:"level"`
+	Ts          float64  `json:"ts"`
+	Msg         string   `json:"msg"`
+	Type        string   `json:"Type"`
+	MachineName string   `json:"MachineName"`
+	ScriptPrint string   `json:"ScriptPrint"`
+	Args        []string `json:"Args"`
+	Count       int      `json:"Count"`
 }
 
 // Write implements SyncWriter
 func (g *guiData) Write(p []byte) (nn int, err error) {
+	g.writes += 1
 
 	if g.cfg.Fl != nil {
 		g.cfg.Fl.Write(p)
@@ -132,30 +162,6 @@ func (g *guiData) Write(p []byte) (nn int, err error) {
 	err = json.Unmarshal(p, sm)
 	if err != nil {
 		panic(err)
-	}
-
-	// add to buffer and update views
-	g.ui.Update(func(gui *gocui.Gui) error {
-		v, err := gui.View("status_log")
-		if err != nil {
-			// handle error
-		}
-
-		fmt.Fprintf(v, "\n %25s| %06d| %35s|"+grey(" Args:")+" %v", yellow(sm.Type), g.count, sm.Msg, sm.Args)
-		return nil
-	})
-
-	if sm.Type == "ScriptOutput" {
-		count := g.count
-		g.ui.Update(func(gui *gocui.Gui) error {
-			v, err := gui.View("script_out")
-			if err != nil {
-				// handle error
-			}
-
-			fmt.Fprintf(v, "\n %06d > %s", count+1, sm.ScriptPrint)
-			return nil
-		})
 	}
 
 	if sm.Count > 0 {
@@ -173,6 +179,34 @@ func (g *guiData) Write(p []byte) (nn int, err error) {
 			fmt.Fprintf(v, grey(" Processed:\n")+" %d", sm.Count)
 			fmt.Fprintf(v, grey("\n Duration:\n")+" %v", dur)
 			fmt.Fprintf(v, grey("\n Avg:\n")+" %v", dur/time.Duration(sm.Count))
+			return nil
+		})
+	}
+
+	if g.cfg.Quiet {
+		// quiet mode does not print messages
+		return
+	}
+
+	// add to buffer and update views
+	g.ui.Update(func(gui *gocui.Gui) error {
+		v, err := gui.View("status_log")
+		if err != nil {
+			// handle error
+		}
+		fmt.Fprintf(v, "\n %25s| %06d| %35s|"+grey(" Args:")+" %v", yellow(sm.Type), g.count, sm.Msg, sm.Args)
+		return nil
+	})
+
+	if sm.Type == "ScriptOutput" {
+		count := g.count
+		g.ui.Update(func(gui *gocui.Gui) error {
+			v, err := gui.View("script_out")
+			if err != nil {
+				// handle error
+			}
+
+			fmt.Fprintf(v, "\n %06d > %s", count+1, sm.ScriptPrint)
 			return nil
 		})
 	}

@@ -46,6 +46,7 @@ type RunnerCfg struct {
 	DryRun        bool
 	Verbose       bool
 	NoTime        bool   // Disable timestamps and duration for deterministic output
+	Limit         int    // Limit the number of records to process
 	Path          string // relative path to config
 	Logger        *zap.Logger
 }
@@ -388,6 +389,19 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 			zap.String("MachineName", machineName),
 			zap.Duration("Duration", recDuration),
 		)
+
+		if r.Cfg.Limit > 0 && r.Cfg.Limit <= count {
+			r.Log.Debug("Stopping at specified limit.",
+				zap.String("Type", "Done"),
+				zap.Int("Count", count),
+				zap.String("MachineName", machineName),
+				zap.String("Query", strings.Trim(query.String(), "\n")),
+				zap.Strings("Args", args),
+				zap.String("MachineName", machineName),
+				zap.Duration("Duration", recDuration),
+			)
+			break
+		}
 
 	}
 
