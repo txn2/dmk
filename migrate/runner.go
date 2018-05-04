@@ -186,32 +186,38 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 		Started:     migrationStart,
 	}
 
-	r.Log.Info("Running Migration", zap.String("MachineName", machineName))
+	r.Log.Info("Running Migration",
+		zap.String("Type", "Setup"),
+		zap.String("MachineName", machineName),
+	)
 
 	// get the migration
 	migration, ok := r.Cfg.Project.Migrations[machineName]
 	if ok != true {
-		r.Log.Error("migration: no migration found.", zap.String("MachineName", machineName))
+		r.Log.Error("migration: no migration found.",
+			zap.String("Type", "Setup"), zap.String("MachineName", machineName))
 		return runResult, errors.New("no migration found for " + machineName)
 	}
 
 	// get the source db
 	sourceDb, ok := r.Cfg.Project.Databases[migration.SourceDb]
 	if ok != true {
-		r.Log.Error("sourceDb: no source database found. ", zap.String("MachineName", migration.SourceDb))
+		r.Log.Error("sourceDb: no source database found. ",
+			zap.String("Type", "Setup"), zap.String("MachineName", migration.SourceDb))
 		return runResult, errors.New("no source database found for " + migration.SourceDb)
 	}
 
 	err := r.tunnel(sourceDb)
 	if err != nil {
-		r.Log.Error("TunnelError", zap.Error(err))
+		r.Log.Error("TunnelError", zap.String("Type", "Setup"), zap.Error(err))
 		return runResult, errors.New("unable to tunnel for " + sourceDb.Component.Name)
 	}
 
 	// get a driver for the source of migration
 	sourceDriver, err := r.configureDriver(machineName, sourceDb)
 	if err != nil {
-		r.Log.Error("sourceDriver", zap.Error(err))
+		r.Log.Error("sourceDriver",
+			zap.String("Type", "Setup"), zap.Error(err))
 		return runResult, err
 	}
 
@@ -219,6 +225,7 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	runResult.SourceDriver = &sourceDriver
 
 	r.Log.Info("Source query args expected.",
+		zap.String("Type", "Setup"),
 		zap.String("MachineName", machineName),
 		zap.Int("ExpectedNArgs", migration.SourceQueryNArgs),
 		zap.Int("ReceivedNArgs", len(sourceArgs)),
@@ -226,6 +233,7 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 
 	if migration.SourceQueryNArgs != len(sourceArgs) {
 		r.Log.Error("Unexpected number or arguments received",
+			zap.String("Type", "Setup"),
 			zap.Int("ExpectedArgs", migration.SourceQueryNArgs),
 			zap.Int("ReceivedArgs", len(sourceArgs)),
 		)
@@ -233,25 +241,33 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	}
 
 	r.Log.Info("Source query.",
+		zap.String("Type", "Setup"),
 		zap.String("SourceQuery", strings.Trim(migration.SourceQuery, "\n")),
 		zap.Strings("SourceArgs", sourceArgs),
 	)
 
 	sourceRecordChan, err := sourceDriver.Out(migration.SourceQuery, sourceArgs)
 	if err != nil {
-		r.Log.Error("sourceDriver.Out", zap.Error(err))
+		r.Log.Error("sourceDriver.Out",
+			zap.String("Type", "Setup"), zap.Error(err))
 		return runResult, err
 	}
 
-	r.Log.Info("Migration DestinationDb", zap.String("MachineName", migration.DestinationDb))
+	r.Log.Info("Migration DestinationDb",
+		zap.String("Type", "Setup"),
+		zap.String("MachineName", migration.DestinationDb),
+	)
 
 	destinationDb, ok := r.Cfg.Project.Databases[migration.DestinationDb]
 	if ok != true {
-		r.Log.Error("destinationDb: no destination database found.", zap.String("MachineName", migration.DestinationDb))
+		r.Log.Error("destinationDb: no destination database found.",
+			zap.String("Type", "Setup"), zap.String("MachineName", migration.DestinationDb))
 		return runResult, errors.New("no destination database found for " + migration.DestinationDb)
 	}
 
-	r.Log.Info("Migration Driver", zap.String("MachineName", destinationDb.Driver))
+	r.Log.Info("Migration Driver",
+		zap.String("Type", "Setup"),
+		zap.String("MachineName", destinationDb.Driver))
 
 	destinationDriver, err := r.configureDriver(machineName, destinationDb)
 	if err != nil {
@@ -279,8 +295,8 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 		setupDuration = 0
 	}
 
-	r.Log.Info("Migrating data.",
-		zap.String("Type", "Start"),
+	r.Log.Info("Start migrating data.",
+		zap.String("Type", "Setup"),
 		zap.String("FromDb", migration.SourceDb),
 		zap.String("ToDb", migration.DestinationDb),
 		zap.Duration("SetupDuration", setupDuration),
@@ -440,7 +456,7 @@ func (r *runner) addScriptFunctions(ctx candyjs.Context, machineName string) {
 		r.Log.Debug("Script output.",
 			zap.String("Type", "ScriptOutput"),
 			zap.String("MachineName", machineName),
-			zap.Any("Print", obj),
+			zap.Any("ScriptPrint", obj),
 		)
 	})
 }

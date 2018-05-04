@@ -106,6 +106,7 @@ migrations:
 
       var v = persistVal(getMigration(), rec.id.toString(), getUuid());
       print("GOT PERSIST VAL: [" + v + "]");
+      //sleep(1000);
 
   cassandra_to_cassandra_using_collector:
     component:

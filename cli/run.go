@@ -68,7 +68,7 @@ func runMigration(machineName string, f grumble.FlagMap, args []string) {
 		gui, wg := tui.NewGui(&tui.GuiDataCfg{machineName, fl})
 		defer wg.Wait()
 
-		out = gui //zapcore.Lock(gui)
+		out = zapcore.Lock(gui)
 	}
 
 	logger := zap.New(zapcore.NewCore(
