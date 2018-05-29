@@ -19,8 +19,7 @@ On MacOS with [brew]() installed.
 
 **Run:**
 ```bash
-brew tap txn2/homebrew-tap
-brew install dmk
+brew install txn2/tap/dmk
 ```
 
 **Upgrade:**
