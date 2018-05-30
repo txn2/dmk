@@ -6,7 +6,6 @@ import (
 
 	"github.com/desertbit/grumble"
 	"github.com/txn2/dmk/migrate"
-	"github.com/txn2/dmk/tui"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -22,7 +21,7 @@ func init() {
 			f.Bool("d", "dry-run", false, "Dry run outputs the first 5 records.")
 			f.Bool("v", "verbose", false, "Verbose output.")
 			f.Bool("n", "no-time", false, "Disable timestamps and duration for deterministic output.")
-			f.Bool("l", "log-out", false, "No GUI and no log file. Log standard out.")
+			f.Bool("l", "log-out", true, "No log file. Log standard out.")
 			f.Bool("q", "quiet", false, "No file logging. Sample status.")
 			f.Int("", "limit", 0, "Limit the number of records to process.")
 		},
@@ -59,9 +58,6 @@ func runMigration(machineName string, f grumble.FlagMap, args []string) {
 	var out zapcore.WriteSyncer
 	out = zapcore.Lock(os.Stdout)
 
-	var guiDataCfg *tui.GuiDataCfg
-	var fl *os.File
-
 	if f.Bool("log-out") != true && f.Bool("quiet") != true {
 		// log gui data to a file
 		fl, err := fileLog(machineName)
@@ -69,18 +65,6 @@ func runMigration(machineName string, f grumble.FlagMap, args []string) {
 			panic(err)
 		}
 		defer fl.Close()
-	}
-
-	if f.Bool("log-out") != true {
-		guiDataCfg = &tui.GuiDataCfg{
-			MachineName: machineName,
-			Fl:          fl,
-			Quiet:       f.Bool("quiet"),
-		}
-		gui, wg := tui.NewGui(guiDataCfg)
-		defer wg.Wait()
-
-		out = zapcore.Lock(gui)
 	}
 
 	logger := zap.New(zapcore.NewCore(
