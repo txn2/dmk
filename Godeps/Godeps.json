@@ -109,6 +109,16 @@
 			"Rev": "0d4b488675fdec1dde48751b05ab530cf0b630e1"
 		},
 		{
+			"ImportPath": "github.com/jroimartin/gocui",
+			"Comment": "v0.3.0-77-gc055c87",
+			"Rev": "c055c87ae801372cd74a0839b972db4f7697ae5f"
+		},
+		{
+			"ImportPath": "github.com/json-iterator/go",
+			"Comment": "1.1.3-16-g2ddf6d7",
+			"Rev": "2ddf6d758266fcb080a4f9e054b9f292c85e6798"
+		},
+		{
 			"ImportPath": "github.com/mattn/go-colorable",
 			"Comment": "v0.0.9-13-g7dc3415",
 			"Rev": "7dc3415be66d7cc68bf0182f35c8d31f8d2ad8a7"
@@ -133,6 +143,20 @@
 			"Rev": "9520e82c474b0a04dd04f8a40959027271bab992"
 		},
 		{
+			"ImportPath": "github.com/modern-go/concurrent",
+			"Comment": "1.0.3",
+			"Rev": "bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94"
+		},
+		{
+			"ImportPath": "github.com/modern-go/reflect2",
+			"Comment": "1.0.0-11-g58118c1",
+			"Rev": "58118c1ea9161250907268a484af4dd6ed314280"
+		},
+		{
+			"ImportPath": "github.com/nsf/termbox-go",
+			"Rev": "21a4d435a86280a2927985fd6296de56cbce453e"
+		},
+		{
 			"ImportPath": "github.com/olebedev/go-duktape",
 			"Rev": "abf0ba0be5d5d36b1f9266463cc320b9a5ab224e"
 		},
@@ -148,6 +172,46 @@
 			"ImportPath": "github.com/satori/go.uuid",
 			"Comment": "v1.2.0",
 			"Rev": "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
+		},
+		{
+			"ImportPath": "go.uber.org/atomic",
+			"Comment": "v1.3.2",
+			"Rev": "1ea20fb1cbb1cc08cbd0d913a96dead89aa18289"
+		},
+		{
+			"ImportPath": "go.uber.org/multierr",
+			"Comment": "v1.1.0-2-gddea229",
+			"Rev": "ddea229ff1dff9e6fe8a6c0344ac73b09e81fce5"
+		},
+		{
+			"ImportPath": "go.uber.org/zap",
+			"Comment": "v1.8.0-2-g2dc8d10",
+			"Rev": "2dc8d10634f473f4dc678e48391a9dc8cf6ae6f9"
+		},
+		{
+			"ImportPath": "go.uber.org/zap/buffer",
+			"Comment": "v1.8.0-2-g2dc8d10",
+			"Rev": "2dc8d10634f473f4dc678e48391a9dc8cf6ae6f9"
+		},
+		{
+			"ImportPath": "go.uber.org/zap/internal/bufferpool",
+			"Comment": "v1.8.0-2-g2dc8d10",
+			"Rev": "2dc8d10634f473f4dc678e48391a9dc8cf6ae6f9"
+		},
+		{
+			"ImportPath": "go.uber.org/zap/internal/color",
+			"Comment": "v1.8.0-2-g2dc8d10",
+			"Rev": "2dc8d10634f473f4dc678e48391a9dc8cf6ae6f9"
+		},
+		{
+			"ImportPath": "go.uber.org/zap/internal/exit",
+			"Comment": "v1.8.0-2-g2dc8d10",
+			"Rev": "2dc8d10634f473f4dc678e48391a9dc8cf6ae6f9"
+		},
+		{
+			"ImportPath": "go.uber.org/zap/zapcore",
+			"Comment": "v1.8.0-2-g2dc8d10",
+			"Rev": "2dc8d10634f473f4dc678e48391a9dc8cf6ae6f9"
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/curve25519",
