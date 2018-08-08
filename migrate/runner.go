@@ -321,8 +321,6 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 			skipRecord := false
 			endMigration := false
 
-			ctx.PushGlobalGoFunction("httpJsonPost", r.HttpJsonPost)
-
 			ctx.PushGlobalGoFunction("getRecord", func() driver.Record {
 				return record
 			})
@@ -476,6 +474,8 @@ func (r *runner) addScriptFunctions(ctx candyjs.Context, machineName string) {
 	// recursive migration (sub query) mainly for used with
 	// migrations that migrate to a collector
 	ctx.PushGlobalGoFunction("run", r.scriptRunner)
+
+	ctx.PushGlobalGoFunction("httpJsonPost", r.HttpJsonPost)
 
 	// persistent storage for value maps
 	ctx.PushGlobalGoFunction("persistVal", r.persistVal)
