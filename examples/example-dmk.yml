@@ -101,6 +101,8 @@ migrations:
     destinationQueryNArgs: 0
     transformationScript: |
       var rec = getRecord();
+
+      httpJsonPost("http://example.com", "{}");
       print("processing id: " + rec.id);
       sendArgs([rec.system, rec.name, rec.id.toString(), rec.description]);
 

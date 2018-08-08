@@ -5,6 +5,7 @@ dev/scr
 *-dmk.yml
 !example-dmk.yml
 projects
+dmk
 
 # Binaries for programs and plugins
 *.exe

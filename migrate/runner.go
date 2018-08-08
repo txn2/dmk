@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"net"
 	"text/template"
 
 	"time"
@@ -11,6 +12,8 @@ import (
 	"strings"
 
 	"os"
+
+	"net/http"
 
 	"github.com/Masterminds/sprig"
 	"github.com/boltdb/bolt"
@@ -318,6 +321,8 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 			skipRecord := false
 			endMigration := false
 
+			ctx.PushGlobalGoFunction("httpJsonPost", r.HttpJsonPost)
+
 			ctx.PushGlobalGoFunction("getRecord", func() driver.Record {
 				return record
 			})
@@ -427,6 +432,39 @@ func (r *runner) Run(machineName string, sourceArgs []string) (*RunResult, error
 	runResult.Duration = elapsed
 
 	return runResult, nil
+}
+
+func (r *runner) HttpJsonPost(url, json string) {
+	var netTransport = &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout: 10 * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: 10 * time.Second,
+	}
+
+	client := &http.Client{
+		Timeout:   time.Second * 60,
+		Transport: netTransport,
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(json)))
+	if err != nil {
+		r.Log.Error("HttpNewRequestError", zap.Error(err))
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		r.Log.Error("HttpNewRequestError", zap.Error(err))
+	}
+	defer resp.Body.Close()
+
+	r.Log.Debug("HttpJsonPostStatus",
+		zap.String("Type", "HttpJsonPostStatus"),
+		zap.Int("StatusCode", resp.StatusCode),
+		zap.String("Status", resp.Status),
+	)
+
 }
 
 // addScriptFunctions add utility functions to script context
