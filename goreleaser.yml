@@ -10,13 +10,16 @@ build:
   goos:
     - darwin
 
+  env:
+    CGO_ENABLED: 0
+
   # GOARCH to build in.
   # For more info refer to https://golang.org/doc/install/source#environment
   # Defaults are 386 and amd64
   goarch:
     - amd64
 
-  ldflags: -s -w -X main.build={{.Version}} -X github.com/txn2/dmk/cli.Version={{.Version}}
+  ldflags: -a -installsuffix cgo -s -w -X github.com/txn2/dmk/cli.Version={{.Version}}
 
 # Archive customization
 archive:

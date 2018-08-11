@@ -80,6 +80,14 @@ Use `godep save` after adding any dependencies.
 
 ## Release Development
 
+### Docker
+
+```bash
+docker build --build-arg VERSION=1.0.5 -t txn2/dmk .
+```
+
+### Brew and Binaries
+
 Uses [goreleaser](https://goreleaser.com):
 
 Install goreleaser with brew (mac):

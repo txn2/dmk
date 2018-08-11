@@ -485,7 +485,8 @@ func (r *runner) addScriptFunctions(ctx candyjs.Context, machineName string) {
 	})
 
 	ctx.PushGlobalGoFunction("getUuid", func() string {
-		return uuid.NewV4().String()
+		id, _ := uuid.NewV4()
+		return id.String()
 	})
 
 	ctx.PushGlobalGoFunction("getStorage", func() *map[string]interface{} {
