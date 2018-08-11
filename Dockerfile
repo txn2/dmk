@@ -7,13 +7,12 @@ COPY . /go/src/github.com/txn2/dmk
 
 WORKDIR /go/src/github.com/txn2/dmk
 RUN go get ./...
-RUN go build -a -installsuffix cg -o dmk \
+RUN GOOS=linux go build -a -installsuffix cg -o dmk \
     -ldflags "-w -s -X github.com/txn2/dmk/cli.Version=${VERSION}" \
     ./dmk.go
 
 
-FROM alpine:3.7
-RUN apk --no-cache add ca-certificates
+FROM ubuntu:18.04
 WORKDIR /
 COPY --from=builder /go/src/github.com/txn2/dmk/dmk /dmk
 
