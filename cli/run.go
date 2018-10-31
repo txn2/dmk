@@ -23,6 +23,7 @@ func init() {
 			f.Bool("n", "no-time", false, "Disable timestamps and duration for deterministic output.")
 			f.Bool("l", "log-out", true, "No log file. Log standard out.")
 			f.Bool("q", "quiet", false, "No file logging. Sample status.")
+			f.String("", "local-db-path", "", "Base path to find and create local databases.")
 			f.Int("", "limit", 0, "Limit the number of records to process.")
 		},
 		Run: func(c *grumble.Context) error {
@@ -86,6 +87,7 @@ func runMigration(machineName string, f grumble.FlagMap, args []string) {
 		Verbose:       f.Bool("verbose"),
 		Quiet:         f.Bool("quiet"),
 		Limit:         f.Int("limit"),
+		LocalDbPath:   f.String("local-db-path"),
 		Logger:        logger,
 	}
 

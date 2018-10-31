@@ -47,6 +47,7 @@ type RunnerCfg struct {
 	NoTime        bool   // Disable timestamps and duration for deterministic output
 	Limit         int    // Limit the number of records to process
 	Path          string // relative path to config
+	LocalDbPath   string // output path
 	Logger        *zap.Logger
 }
 
@@ -93,7 +94,12 @@ func NewRunner(cfg RunnerCfg) *runner {
 // getLocalDb gets the database
 func (r *runner) getLocalDb(migration string) (*bolt.DB, error) {
 	// one database per migration (to avoid dealing with multiple writers)
-	dbFile := r.Cfg.Path + r.Cfg.Project.Component.MachineName + "-" + migration + ".db"
+	basePath := r.Cfg.Path
+
+	if r.Cfg.LocalDbPath != "" {
+		basePath = r.Cfg.LocalDbPath
+	}
+	dbFile := basePath + r.Cfg.Project.Component.MachineName + "-" + migration + ".db"
 
 	if db, ok := localDbs[dbFile]; ok {
 		return db, nil
