@@ -15,5 +15,3 @@ FROM ubuntu:18.04
 RUN mkdir -p /data
 WORKDIR /data
 COPY --from=builder /go/src/github.com/txn2/dmk/dmk /bin/dmk
-
-ENTRYPOINT ["dmk"]

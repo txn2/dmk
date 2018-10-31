@@ -83,8 +83,15 @@ see: https://github.com/Masterminds/glide
 ## Docker Build
 
 ```bash
-docker build --build-arg VERSION=1.1.0 -t txn2/dmk -f ./dockerfiles/cmd/Dockerfile .
+docker build --build-arg VERSION=1.1.0 -t txn2/dmk:1.1.0-2 -f ./dockerfiles/cmd/Dockerfile .
 ```
+
+Container with no entry point:
+```bash
+docker build --build-arg VERSION=1.1.0-noep -t txn2/dmk:1.1.0-2-noep -f ./dockerfiles/noep/Dockerfile .
+```
+
+
 
 ## Release Development
 
