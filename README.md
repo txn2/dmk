@@ -80,6 +80,12 @@ Run `go run ./dmk.go -d ./examples/`
 
 see: https://github.com/Masterminds/glide
 
+## Docker Build
+
+```bash
+docker build --build-arg VERSION=1.1.0 -t txn2/dmk -f ./dockerfiles/cmd/Dockerfile .
+```
+
 ## Release Development
 
 Uses [goreleaser](https://goreleaser.com):
