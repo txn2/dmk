@@ -15,5 +15,4 @@ FROM ubuntu:18.04
 WORKDIR /
 COPY --from=builder /go/src/github.com/txn2/dmk/dmk /dmk
 
-RUN mkdir -p /projects
 ENTRYPOINT ["/dmk"]

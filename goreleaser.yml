@@ -3,6 +3,7 @@ build:
   # Path to main.go file.
   # Default is `main.go`
   main: ./dmk.go
+  binary: dmk
 
   # GOOS list to build in.
   # For more info refer to https://golang.org/doc/install/source#environment
@@ -38,10 +39,6 @@ archive:
     386: 386
     darwin: macOS
     linux: linux
-
-  format_overrides:
-    - goos: windows
-      format: zip
 
   # Additional files you want to add to the archive.
   # Defaults are any files matching `LICENCE*`, `LICENSE*`,
