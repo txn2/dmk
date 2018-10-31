@@ -5,15 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"text/template"
-
-	"time"
-
-	"strings"
-
-	"os"
-
 	"net/http"
+	"os"
+	"strings"
+	"text/template"
+	"time"
 
 	"github.com/Masterminds/sprig"
 	"github.com/boltdb/bolt"

@@ -7,13 +7,13 @@ import (
 
 	"errors"
 
-	"github.com/AlecAivazis/survey"
 	"github.com/desertbit/grumble"
 	"github.com/fatih/color"
 	"github.com/go-yaml/yaml"
 	"github.com/txn2/dmk/driver"
 	"github.com/txn2/dmk/migrate"
 	"github.com/txn2/dmk/tunnel"
+	"gopkg.in/AlecAivazis/survey.v1"
 )
 
 // appState holds state for the CLI
