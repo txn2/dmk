@@ -76,7 +76,9 @@ go run ./dmk.go -d examples -p example run -v cassandra_to_cassandra_using_colle
 
 Run `go run ./dmk.go -d ./examples/`
 
-Use `godep save` after adding any dependencies.
+## Vendor Package Management
+
+see: https://github.com/Masterminds/glide
 
 ## Release Development
 

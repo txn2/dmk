@@ -1,0 +1,43 @@
+package: github.com/txn2/dmk
+import:
+- package: github.com/AlecAivazis/survey
+  version: ~1.6.3
+- package: github.com/Masterminds/sprig
+  version: ~2.16.0
+- package: github.com/boltdb/bolt
+  version: ~1.3.1
+- package: github.com/davecgh/go-spew
+  version: ~1.1.1
+  subpackages:
+  - spew
+- package: github.com/desertbit/grumble
+  version: ~0.0.1
+- package: github.com/fatih/color
+  version: ~1.7.0
+- package: github.com/go-sql-driver/mysql
+  version: ~1.4.0
+- package: github.com/go-yaml/yaml
+  version: ~2.2.1
+- package: github.com/gocql/gocql
+- package: github.com/jroimartin/gocui
+  version: ~0.4.0
+- package: github.com/json-iterator/go
+  version: ~1.1.5
+- package: github.com/mcuadros/go-candyjs
+- package: github.com/olekukonko/tablewriter
+  version: ~0.0.1
+- package: github.com/recursionpharma/go-csv-map
+- package: github.com/satori/go.uuid
+  version: ~1.2.0
+- package: go.uber.org/zap
+  version: ~1.9.1
+  subpackages:
+  - zapcore
+- package: golang.org/x/crypto
+  subpackages:
+  - ssh
+  - ssh/agent
+- package: gopkg.in/AlecAivazis/survey.v1
+  version: ~1.6.3
+- package: gopkg.in/yaml.v2
+  version: ~2.2.1
